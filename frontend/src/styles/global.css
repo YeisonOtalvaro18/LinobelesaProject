@@ -1,0 +1,29 @@
+/* global.css */
+/* Estilos globales */
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: #fafafa;
+  color: #333;
+}
+
+
+/* --- Botones con gradiente global --- */
+
+button,
+.btn {
+  background: #a749eb;
+  background: radial-gradient(circle, rgba(167, 73, 235, 1) 0%, rgba(189, 70, 183, 1) 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:hover,
+.btn:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
+}

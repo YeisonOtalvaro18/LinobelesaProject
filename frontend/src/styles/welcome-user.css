@@ -1,0 +1,360 @@
+/* =========================
+   WELCOME USER PAGE STYLES
+========================= */
+
+.welcome-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 0;
+}
+
+.welcome-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: #a749eb;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #a749eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* =========================
+   HEADER
+========================= */
+.welcome-header {
+  background: linear-gradient(135deg, #a749eb 0%, #bd46b7 100%);
+  color: white;
+  padding: 32px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 20px rgba(167, 73, 235, 0.3);
+}
+
+.welcome-greeting h1 {
+  font-size: 2.5rem;
+  margin: 0 0 8px 0;
+  font-weight: 700;
+}
+
+.welcome-subtitle {
+  font-size: 1.1rem;
+  margin: 0 0 16px 0;
+  opacity: 0.9;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.welcome-logo img {
+  height: 80px;
+  filter: brightness(0) invert(1);
+}
+
+/* =========================
+   QUICK ACTIONS
+========================= */
+.quick-actions {
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.quick-actions h2 {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 32px;
+  font-weight: 600;
+}
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.action-card {
+  background: white;
+  padding: 32px 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
+}
+
+.action-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(167, 73, 235, 0.15);
+  border-color: #a749eb;
+}
+
+.action-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.action-card h3 {
+  font-size: 1.3rem;
+  color: #333;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.action-card p {
+  color: #666;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.action-btn {
+  background: linear-gradient(90deg, #a749eb 0%, #bd46b7 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(167, 73, 235, 0.3);
+}
+
+/* =========================
+   FEATURED PRODUCTS
+========================= */
+.featured-section {
+  background: white;
+  padding: 48px 24px;
+}
+
+.featured-section h2 {
+  text-align: center;
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 32px;
+  font-weight: 600;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.product-card {
+  background: #f8f9fa;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.product-image {
+  height: 200px;
+  overflow: hidden;
+}
+
+.product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image img {
+  transform: scale(1.05);
+}
+
+.product-info {
+  padding: 20px;
+}
+
+.product-info h3 {
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.product-info p {
+  color: #666;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.product-btn {
+  background: #a749eb;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.product-btn:hover {
+  background: #bd46b7;
+  transform: translateY(-1px);
+}
+
+/* =========================
+   MOTIVATION SECTION
+========================= */
+.motivation-section {
+  background: linear-gradient(135deg, #a749eb 0%, #bd46b7 100%);
+  color: white;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.motivation-content h2 {
+  font-size: 2.2rem;
+  margin-bottom: 16px;
+  font-weight: 700;
+}
+
+.motivation-content p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 32px;
+  opacity: 0.9;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.motivation-stats {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.stat-label {
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+/* =========================
+   FOOTER
+========================= */
+.welcome-footer {
+  background: #333;
+  color: white;
+  padding: 24px;
+  text-align: center;
+}
+
+.welcome-footer p {
+  margin: 0 0 16px 0;
+  opacity: 0.8;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+}
+
+.footer-links a {
+  color: white;
+  text-decoration: none;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.footer-links a:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 768px) {
+  .welcome-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 24px;
+  }
+  
+  .welcome-greeting h1 {
+    font-size: 2rem;
+  }
+  
+  .user-info {
+    align-items: center;
+  }
+  
+  .actions-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .motivation-stats {
+    gap: 24px;
+  }
+  
+  .footer-links {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .quick-actions,
+  .featured-section,
+  .motivation-section {
+    padding: 32px 16px;
+  }
+}

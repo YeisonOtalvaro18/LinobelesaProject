@@ -1,0 +1,364 @@
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+}
+
+body {
+  background: linear-gradient(120deg, #f3e6ff 0%, #e9d0fa 100%);
+}
+
+.cont-princ {
+  margin: 40px auto 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: 1100px;
+  background: rgba(255,255,255,0.92);
+  border-radius: 32px;
+  box-shadow: 0 8px 32px rgba(80, 0, 120, 0.10);
+  min-height: 420px;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+}
+
+.div-cont-prin {
+  flex: 1 1 350px;
+  min-width: 320px;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: none;
+  margin: 0 12px;
+  padding: 0;
+}
+
+.div-cont-prin ul {
+  list-style: none;
+  background: rgba(167, 73, 235, 0.07);
+  min-height: 340px;
+  border-radius: 28px;
+  padding: 32px 28px 24px 28px;
+  box-shadow: 0 2px 12px rgba(167, 73, 235, 0.06);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.div-cont-prin ul li {
+  margin-top: 28px;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.div-cont-prin ul li h1 {
+  color: #a749eb;
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  letter-spacing: -1px;
+  text-align: left;
+}
+
+.div-cont-prin ul li p {
+  color: #444;
+  font-size: 1.08rem;
+  line-height: 1.7;
+  text-align: left;
+  margin-bottom: 0;
+}
+
+.div-cont-prin .img-lino-prin {
+  width: 340px;
+  height: 340px;
+  border-radius: 32px;
+  margin-left: 0;
+  border-bottom: 4px solid #a749eb;
+  object-fit: cover;
+  box-shadow: 0 4px 18px rgba(167, 73, 235, 0.10);
+  background: #f3e6ff;
+  padding: 0;
+}
+  .cont-princ {
+    flex-direction: column;
+    padding: 12px;
+    min-height: 0;
+  }
+  .div-cont-prin {
+    max-width: 98vw;
+    margin: 0 auto 18px auto;
+  }
+  .div-cont-prin .img-lino-prin {
+    width: 90vw;
+    height: 220px;
+    border-radius: 18px;
+  }
+
+/* Galería */
+.title-gal {
+  margin-left: 10%;
+  margin-right: 10%;
+  color: rgb(128, 15, 241);
+  padding: 0;
+  margin-top: 40px;
+}
+
+.div-gal {
+  margin-left: 10%;
+  margin-right: 10%;
+  width: 80vw;
+  height: 60vh;
+  background-color: rgba(210, 105, 30, 0);
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: 1fr;
+}
+
+.divs-cont-ga {
+  margin-left: 10%;
+  margin-right: 10%;
+  background-color: rgba(221, 10, 10, 0);
+  color: rgb(243, 11, 11);
+  border: 3px solid rgba(136, 0, 255, 0);
+  width: 16vw;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.brazilian {
+  margin-left: 10%;
+  margin-right: 10%;
+  margin-left: 14px;
+  height: 300px;
+  border-radius: 10px;
+  width: 14vw;
+  border-bottom: 1px solid black;
+}
+
+.btn-gal-Ini {
+  margin: 24px auto 0 auto;
+  padding: 12px 32px;
+  width: 220px;
+  border-radius: 1rem;
+  background: radial-gradient(circle at 50% 0%, #c850c0 0%, #a020f0 100%);
+  color: #fff;
+  border: none;
+  font-size: 1.1rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 2px 8px 0 rgba(180, 120, 255, 0.08);
+  transition: background 0.2s, transform 0.2s;
+  display: block;
+}
+
+.btn-gal-Ini a {
+  color: white;
+  text-decoration: none;
+  font-size: 1.1rem;
+  box-sizing: initial;
+}
+
+/* Eventos */
+.div-eve {
+  margin-left: 10%;
+  margin-right: 10%;
+  margin-top: 30px;
+  width: 80vw;
+  height: 60vh;
+  background-color: rgba(6, 139, 255, 0);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 1fr;
+  padding: 0;
+}
+
+.divs-cont-eve {
+  background-color: rgba(227, 143, 34, 0);
+  border: 2px solid rgba(0, 0, 255, 0);
+  width: 26.6vw;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.im-ev {
+  width: 20vw;
+  height: 30vh;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  margin-left: 50px;
+}
+
+.btn-gal-Inir {
+  margin: 24px auto 0 auto;
+  padding: 12px 32px;
+  width: 220px;
+  border-radius: 1rem;
+  background: radial-gradient(circle at 50% 0%, #c850c0 0%, #a020f0 100%);
+  color: #fff;
+  border: none;
+  font-size: 1.1rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 2px 8px 0 rgba(180, 120, 255, 0.08);
+  transition: background 0.2s, transform 0.2s;
+  display: block;
+}
+
+.btn-gal-Inir a {
+  color: white;
+  text-decoration: none;
+  font-size: 1.1rem;
+  box-sizing: initial;
+}
+
+/* Empresa */
+.div-empr img {
+  width: 15vw;
+  height: 30vh;
+  object-fit: cover;
+  border-radius: 30px;
+}
+
+.div-empr {
+  margin-left: 10%;
+  margin-right: 10%;
+  padding: 0;
+  margin-top: 100px;
+  width: 80vw;
+  height: auto;
+  background-color: transparent;
+  display: grid;
+  gap: 40px;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.div-emprs1,
+.div-emprs2,
+.div-emprs3 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: transparent;
+  padding: 0;
+}
+
+.div-emprs1-h1 h1 {
+  color: rgb(132, 5, 187);
+  font-family: "Kanit", sans-serif;
+  font-weight: 900;
+  margin-top: 10px;
+}
+
+.div-emprs1-h1 p,
+.div-emprs3 p {
+  font-size: 95%;
+  color: black;
+  background-color: rgba(183, 0, 255, 0.141);
+  padding: 10px;
+  border-radius: 20px;
+}
+
+.div-emprs2 h1 a {
+  color: rgb(132, 5, 187);
+  font-family: "Kanit", sans-serif;
+  font-weight: 900;
+}
+
+.div-emprs2 a {
+  color: darkviolet;
+  padding: 4px;
+}
+
+.div-emprs3 h1 {
+  margin-top: 20px;
+  color: rgb(132, 5, 187);
+  font-family: "Kanit", sans-serif;
+  font-weight: 900;
+}
+
+/* Footer */
+.fot {
+  margin-top: 160px;
+  width: 80vw;
+  height: 20vh;
+  border-radius: 40px 40px 0px 0px;
+  background-color: rgba(251, 253, 255, 0.347);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-content: center;
+  border-style: none;
+}
+
+.fot-2 {
+  margin-left: 13%;
+  margin-right: 10%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.btnfot {
+  border-radius: 20px;
+  font-size: 140%;
+  padding-left: 10px;
+  padding-right: 10px;
+  background-color: #6a0dad;
+  color: rgb(8, 8, 8);
+}
+
+.btnfot a {
+  font-size: 100%;
+  color: rgb(252, 248, 248);
+  text-decoration: none;
+  text-align: center;
+  align-items: center;
+} 
+
+/* Forzar disposición vertical */
+.cont-princ,
+.div-gal,
+.div-eve,
+.div-empr {
+  flex-direction: column !important;
+  display: flex !important;
+  height: auto !important;
+}
+
+.div-gal .divs-cont-ga,
+.div-eve .divs-cont-eve,
+.div-empr > div {
+  margin-bottom: 20px;
+}
+
+
+/* --- Botones con gradiente global --- */
+
+button,
+.btn {
+  background: #a749eb;
+  background: radial-gradient(circle, rgba(167, 73, 235, 1) 0%, rgba(189, 70, 183, 1) 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:hover,
+.btn:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
+}

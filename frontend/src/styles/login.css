@@ -1,0 +1,349 @@
+@media (max-width: 700px) {
+  .register-form label,
+  .login-form label {
+    display: block;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 6px;
+    margin-top: 10px;
+  }
+}
+@media (max-width: 700px) {
+  .forms-section {
+    align-items: center;
+    justify-content: flex-start;
+    flex-direction: column;
+  }
+  .register-form,
+  .login-form {
+    align-items: center;
+    text-align: center;
+  }
+  .register-form input,
+  .login-form input {
+    text-align: center;
+  }
+  .password-rules {
+    text-align: left;
+    align-items: flex-start;
+  }
+}
+/* =========================
+   13. RESPONSIVE
+========================= */
+@media (max-width: 700px) {
+  .auth-container {
+    flex-direction: column;
+    min-height: unset;
+    max-width: 99vw;
+    box-shadow: none;
+    border-radius: 0;
+    margin: 0;
+    width: 100vw;
+    padding: 0;
+  }
+  .brand-section {
+    padding: 24px 8px;
+    min-height: 120px;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .brand-image {
+    max-width: 120px;
+    margin-bottom: 10px;
+    padding: 2px;
+  }
+  .forms-section {
+    padding: 12px 6px;
+    min-width: unset;
+    box-shadow: none;
+    border-radius: 0;
+  }
+  .register-form,
+  .login-form {
+    max-width: 99vw;
+    padding: 18px 8px;
+    box-shadow: none;
+    border-radius: 0;
+  }
+  .auth-button {
+    font-size: 0.9rem;
+    padding: 9px 0;
+  }
+  .password-rules {
+    font-size: 12px;
+    padding: 8px;
+  }
+}
+/* =========================
+   1. RESET BÁSICO Y FUENTE
+========================= */
+* {
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+/* =========================
+   2. CONTENEDOR PRINCIPAL
+========================= */
+.auth-container {
+  display: flex;
+  max-width: 720px;         /* ancho máximo en escritorio */
+  width: 95vw;              /* ocupa casi todo en pantallas pequeñas */
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(80, 0, 120, 0.15),
+              0 1.5px 8px rgba(80, 0, 120, 0.08);
+  align-items: stretch;
+  margin: 20px auto;
+  background: #fff;
+  min-height: 460px;
+}
+
+/* =========================
+   3. LADO IZQUIERDO (MARCA)
+========================= */
+.brand-section {
+  flex: 1.2;
+  background: linear-gradient(135deg, #a749eb 0%, #bd46b7 100%);
+  color: #fff;
+  padding: 32px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-image {
+  max-width: 180px;  /* un poco más grande */
+  width: 100%;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  background: #fff;
+  padding: 6px;
+}
+
+/* =========================
+   4. LADO DERECHO (FORMULARIOS)
+========================= */
+.forms-section {
+  flex: 1.5;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+@media (max-width: 700px) {
+  .forms-section {
+    align-items: center;
+    justify-content: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* =========================
+   5. ESTILOS GENERALES FORM
+========================= */
+.register-form,
+.login-form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 360px;
+  background: #faf7fd;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(167, 73, 235, 0.08);
+  padding: 26px 20px;
+  gap: 10px;
+  animation: fade-in 0.3s ease;
+}
+
+/* Titulares y subtítulos */
+.register-form h2,
+.login-form h2 {
+  font-size: 1.8rem;
+  color: #a749eb;
+  margin-bottom: 6px;
+}
+
+.register-form p,
+.login-form p {
+  font-size: 0.95rem;
+  color: #7a5a8c;
+  margin-bottom: 14px;
+}
+
+/* =========================
+   6. INPUTS
+========================= */
+.register-form input,
+.login-form input {
+  padding: 12px 14px;
+  border: 1.5px solid #e2d6f7;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: #fff;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.register-form input:focus,
+.login-form input:focus {
+  border-color: #a749eb;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(167, 73, 235, 0.15);
+}
+
+/* =========================
+   7. WRAPPER PARA CONTRASEÑA
+========================= */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrapper input {
+  flex: 1;
+  padding-right: 40px; /* espacio para el ojito */
+}
+
+/* Botón del ojito */
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #a749eb;
+}
+
+/* Indicador de longitud */
+.password-length {
+  font-size: 12px;
+  margin: -8px 0 10px;
+  color: #666;
+}
+
+/* =========================
+   8. REGLAS DE CONTRASEÑA
+========================= */
+.password-rules {
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 12px;
+  border-radius: 8px;
+  margin: 12px 0;
+  font-size: 14px;
+  max-width: 100%; /* no desborda */
+}
+
+.password-rules p {
+  margin: 0 0 6px;
+  font-weight: bold;
+  color: #333;
+}
+
+.password-rules ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.password-rules li {
+  margin-bottom: 4px;
+}
+
+/* Estados de las reglas */
+.password-rules li.valid {
+  color: green;
+}
+
+.password-rules li.invalid {
+  color: red;
+}
+
+/* =========================
+   9. CHECKBOX
+========================= */
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #7a5a8c;
+  margin-top: 8px;
+}
+
+/* =========================
+   10. BOTONES
+========================= */
+.auth-button {
+  padding: 10px 0;   /* antes 13px → más compacto */
+  background: linear-gradient(90deg, #a749eb 0%, #bd46b7 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;   /* antes 1.05rem → más pequeño */
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s;
+  margin-top: 8px;
+  box-shadow: 0 2px 8px rgba(167, 73, 235, 0.12);
+}
+
+.auth-button:hover {
+  transform: scale(1.02);
+  opacity: 0.95;
+}
+
+/* =========================
+   11. MENSAJES DE ERROR Y ÉXITO
+========================= */
+.error {
+  color: #dc3545;
+  font-size: 14px;
+  margin: 8px 0;
+  padding: 8px 12px;
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.success {
+  color: #155724;
+  font-size: 14px;
+  margin: 8px 0;
+  padding: 8px 12px;
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 4px;
+  text-align: center;
+}
+
+/* =========================
+   12. SWITCH (login <-> registro)
+========================= */
+.auth-switch {
+  margin-top: 10px;   /* espacio controlado debajo del botón */
+  text-align: center;
+  font-size: 14px;
+  color: #a749eb;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.auth-switch span:hover {
+  text-decoration: underline;
+  color: #bd46b7;
+}
