@@ -37,7 +37,7 @@
     min-height: unset;
     max-width: 99vw;
     box-shadow: none;
-    border-radius: 0;
+    border-radius: var(--border-radius);
     margin: 0;
     width: 100vw;
     padding: 0;
@@ -45,7 +45,7 @@
   .brand-section {
     padding: 24px 8px;
     min-height: 120px;
-    border-radius: 0;
+    border-radius: var(--border-radius);
     box-shadow: none;
   }
   .brand-image {

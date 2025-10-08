@@ -1,13 +1,19 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "../styles/login.css";
 
 const Modal = ({ open, type = "success", message, onClose, loading }) => {
+  useEffect(() => {
+    return () => {
+      // Cleanup if needed
+    };
+  }, []);
+
   if (!open) return null;
 
   return (
     <div className="modal-success-bg">
       <div className="modal-success-card animate-pop">
-        <div className="modal-success-icon">
+        <div className="modal-souccess-icon">
           {loading ? (
             <svg className="sending-spinner" width="60" height="60" viewBox="0 0 60 60">
               <circle cx="30" cy="30" r="26" stroke="#a749eb" strokeWidth="6" fill="none" opacity="0.2"/>

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const connectDB = require('../db');
-
+const { ObjectId } = require('mongodb');
 
 router.get('/all', async (req, res) => {
   try {
@@ -55,6 +55,74 @@ router.post('/add', async (req, res) => {
   } catch (err) {
     console.error("Error al guardar producto:", err);
     res.status(500).json({ success: false, error: "Error interno del servidor" });
+  }
+});
+
+// Ruta para actualizar el stock de un producto
+router.put('/:id/stock', async (req, res) => {
+  try {
+    const db = await connectDB();
+    if (!db) {
+      return res.status(500).json({ success: false, error: 'No se pudo conectar a la base de datos' });
+    }
+
+    const products = db.collection('products');
+    const inventory = db.collection('inventory');
+
+    const productId = req.params.id;
+    const { newStock, reason, action, quantity } = req.body;
+
+    // Actualizar el stock del producto
+    const result = await products.updateOne(
+      { _id: new ObjectId(productId) },
+      { $set: { stock: newStock } }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ success: false, error: 'Producto no encontrado' });
+    }
+
+    // Registrar el movimiento en el inventario
+    const inventoryEntry = {
+      productId: new ObjectId(productId),
+      action,
+      quantity,
+      previousStock: req.body.previousStock,
+      newStock,
+      reason,
+      createdAt: new Date()
+    };
+
+    await inventory.insertOne(inventoryEntry);
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error al actualizar stock:', err);
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
+  }
+});
+
+// Ruta para eliminar un producto
+router.delete('/:id', async (req, res) => {
+  try {
+    const db = await connectDB();
+    if (!db) {
+      return res.status(500).json({ success: false, error: 'No se pudo conectar a la base de datos' });
+    }
+
+    const products = db.collection('products');
+    const productId = req.params.id;
+
+    const result = await products.deleteOne({ _id: new ObjectId(productId) });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ success: false, error: 'Producto no encontrado' });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error al eliminar producto:', err);
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 

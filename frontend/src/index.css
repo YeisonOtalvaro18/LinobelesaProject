@@ -1,3 +1,5 @@
+/* Removed Tailwind directives due to unknown at-rule error */
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../styles/products.css";
 
-function Products() {
+function Products({ addToCart, isAdmin = false, isAuthenticated = false }) {
   // 🧩 Estados
   const [products, setProducts] = useState([]);
   const [form, setForm] = useState({
@@ -70,13 +70,19 @@ function Products() {
 
   // 🛒 Añadir al carrito
   const handleAddToCart = (product) => {
-    const existing = cart.find((item) => item._id === product._id);
-    if (existing) {
-      setCart(cart.map((item) =>
-        item._id === product._id ? { ...item, qty: item.qty + 1 } : item
-      ));
+    if (addToCart) {
+      // Usar la función del carrito global desde App.jsx
+      addToCart(product);
     } else {
-      setCart([...cart, { ...product, qty: 1 }]);
+      // Función local como fallback (solo para admin que no necesita carrito)
+      const existing = cart.find((item) => item._id === product._id);
+      if (existing) {
+        setCart(cart.map((item) =>
+          item._id === product._id ? { ...item, qty: item.qty + 1 } : item
+        ));
+      } else {
+        setCart([...cart, { ...product, qty: 1 }]);
+      }
     }
   };
 
@@ -89,43 +95,45 @@ function Products() {
     <section className="products">
       <h2>Nuestros Productos</h2>
 
-      {/* 📝 Formulario */}
-      <form className="product-form" onSubmit={handleAddProduct}>
-        <input
-          type="text"
-          placeholder="Nombre"
-          value={form.name}
-          onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-          required
-        />
-        <input
-          type="number"
-          placeholder="Precio"
-          value={form.price}
-          onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
-          required
-        />
-        <textarea
-          placeholder="Descripción"
-          value={form.description}
-          onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-          required
-        />
-        <input
-          type="text"
-          placeholder="Categoría"
-          value={form.category}
-          onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-          required
-        />
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleImageChange}
-          required
-        />
-        <button type="submit">Agregar producto</button>
-      </form>
+      {/* 📝 Formulario - Solo para Administradores */}
+      {isAdmin && (
+        <form className="product-form" onSubmit={handleAddProduct}>
+          <input
+            type="text"
+            placeholder="Nombre"
+            value={form.name}
+            onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+            required
+          />
+          <input
+            type="number"
+            placeholder="Precio"
+            value={form.price}
+            onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
+            required
+          />
+          <textarea
+            placeholder="Descripción"
+            value={form.description}
+            onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+            required
+          />
+          <input
+            type="text"
+            placeholder="Categoría"
+            value={form.category}
+            onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
+            required
+          />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            required
+          />
+          <button type="submit">Agregar producto</button>
+        </form>
+      )}
 
       {/* 🧾 Vista de productos */}
       <div className="product-grid">
@@ -137,34 +145,44 @@ function Products() {
             <p className="price">
               ${parseFloat(prod.price).toLocaleString("es-CO")}
             </p>
-            <button onClick={() => handleAddToCart(prod)}>Añadir al carrito</button>
+            {/* Botón carrito solo para clientes autenticados (no admin) */}
+            {isAuthenticated && !isAdmin && (
+              <button onClick={() => handleAddToCart(prod)}>Añadir al carrito</button>
+            )}
+            {!isAuthenticated && (
+              <button onClick={() => alert("Debes iniciar sesión para comprar")}>
+                Iniciar sesión para comprar
+              </button>
+            )}
           </div>
         ))}
       </div>
 
-      {/* 🛍️ Carrito */}
-      <div className="cart">
-        <h3>🛒 Carrito</h3>
-        {cart.length === 0 ? (
-          <p>El carrito está vacío</p>
-        ) : (
-          <ul>
-            {cart.map((item) => (
-              <li key={item._id}>
-                {item.name} x{item.qty} - $
-                {(item.price * item.qty).toLocaleString("es-CO")}
-                <button onClick={() => handleRemoveFromCart(item._id)}>❌</button>
-              </li>
-            ))}
-          </ul>
-        )}
-        {cart.length > 0 && (
-          <p className="total">
-            Total: $
-            {cart.reduce((acc, item) => acc + item.price * item.qty, 0).toLocaleString("es-CO")}
-          </p>
-        )}
-      </div>
+      {/* 🛍️ Carrito - Solo para clientes */}
+      {isAuthenticated && !isAdmin && (
+        <div className="cart">
+          <h3>🛒 Carrito</h3>
+          {cart.length === 0 ? (
+            <p>Tu carrito está vacío</p>
+          ) : (
+            <ul>
+              {cart.map((item) => (
+                <li key={item._id}>
+                  {item.name} x{item.qty} - $
+                  {(item.price * item.qty).toLocaleString("es-CO")}
+                  <button onClick={() => handleRemoveFromCart(item._id)}>❌</button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {cart.length > 0 && (
+            <p className="total">
+              Total: $
+              {cart.reduce((acc, item) => acc + item.price * item.qty, 0).toLocaleString("es-CO")}
+            </p>
+          )}
+        </div>
+      )}
     </section>
   );
 }

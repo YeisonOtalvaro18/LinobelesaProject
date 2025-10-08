@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "../styles/contacto.css";
+import ContactModal from "../components/ContactModal";
 
 
 export default function ContactForm() {
@@ -32,7 +33,7 @@ export default function ContactForm() {
   };
   return (
     <>
-      <div className="contact-page">
+      <div className="contact-page contact-grid">
         <div className="formu">
           <h2>Formulario de Contacto</h2>
           <form onSubmit={handleSubmit}>
@@ -53,34 +54,33 @@ export default function ContactForm() {
             </button>
           </form>
         </div>
-        {/* ====== INFO CONTACTO ====== */}
-        <div className="info-contacto">
-          <h2>Información de contacto</h2>
-          <p>Teléfono: +57 316 0448131</p>
-          <p>Email: infolinobelesa@gmail.com</p>
+        <div className="contact-extra">
+          <h2>Redes Sociales & Ubicación</h2>
+          <div className="contact-social">
+            <a href="https://www.facebook.com/p/Linobelesa-100093308496757/" target="_blank" rel="noopener noreferrer" className="social-icon"><span><i className="fab fa-facebook-f"></i></span> Facebook</a>
+            <a href="https://www.instagram.com/linobelesa/" target="_blank" rel="noopener noreferrer" className="social-icon"><span><i className="fab fa-instagram"></i></span> Instagram</a>
+            <a href="https://www.tiktok.com/@linobelesa" target="_blank" rel="noopener noreferrer" className="social-icon"><span><i className="fab fa-tiktok"></i></span> TikTok</a>
+            <a href="https://wa.me/573160448131" target="_blank" rel="noopener noreferrer" className="social-icon"><span><i className="fab fa-whatsapp"></i></span> WhatsApp</a>
+          </div>
+          <div className="contact-map">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.234073624663!2d-75.3763178!3d6.1671623!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e469fa601c90a23%3A0xcbec4b2b274acaac!2sCl.%2067%20%2354-297%2C%20Rionegro%2C%20Antioquia!5e0!3m2!1ses-419!2sco!4v1695734400000!5m2!1ses-419!2sco"
+              width="100%"
+              height="220"
+              style={{ border: 0, borderRadius: '12px', boxShadow: '0 2px 12px rgba(108,12,191,0.13)' }}
+              allowFullScreen=""
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Ubicación Linobelesa"
+            ></iframe>
+          </div>
         </div>
         {/* Modal de éxito elegante */}
         {showSuccessModal && (
-          <div className="modal-overlay" onClick={() => setShowSuccessModal(false)}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <div className="success-icon">✅</div>
-                <h3>¡Mensaje enviado!</h3>
-                <p>Tu mensaje ha sido enviado correctamente</p>
-              </div>
-              <div className="modal-body">
-                <p>Gracias por contactarnos. Te responderemos pronto.</p>
-                <div className="modal-actions">
-                  <button 
-                    className="btn-primary" 
-                    onClick={() => setShowSuccessModal(false)}
-                  >
-                    Continuar
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+          <ContactModal 
+            open={showSuccessModal} 
+            onClose={() => setShowSuccessModal(false)}
+          />
         )}
       </div>
     </>

@@ -17,16 +17,6 @@
   }
 }
 /* =========================================================
-   RESET GLOBAL
-   ========================================================= */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Segoe UI", sans-serif;
-}
-
-/* =========================================================
    HEADER
    ========================================================= */
 .main-header {
@@ -35,7 +25,7 @@
   position: sticky;
   top: 0;
   z-index: 1000;
-  transition: transform 0.35s cubic-bezier(.4, 0, .2, 1);
+  transition: var(--transition);
 }
 
 .hide-header {
@@ -579,4 +569,50 @@ button:hover,
     height: 45px;
     font-size: 1.4rem;
   }
+}
+
+/* Estilos mejorados para la casilla desplegable del usuario */
+.dropdown-select {
+  background-color: #6a0dad;
+  color: white;
+  border: 1px solid #7a1fd0;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  width: 220px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.dropdown-select:hover {
+  background-color: #7a1fd0;
+  border-color: #6a0dad;
+  transform: scale(1.05);
+}
+
+.dropdown-select option {
+  background-color: white;
+  color: #6a0dad;
+  padding: 8px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dropdown-select option:hover {
+  background-color: #f3f3f3;
+  color: #7a1fd0;
+}
+
+.dropdown-select:focus {
+  outline: none;
+  box-shadow: 0 0 8px #6a0dad;
+}
+
+.dropdown-select .icon {
+  margin-right: 8px;
+  color: white;
+  font-size: 1.2rem;
 }

@@ -66,13 +66,18 @@ function Products() {
 
   // 🛒 Añadir al carrito
   const handleAddToCart = (product) => {
+    const productWithImage = {
+      ...product,
+      image: product.images?.[0] // Aseguramos que la imagen se pase correctamente
+    };
+    
     const existing = cart.find((item) => item._id === product._id);
     if (existing) {
       setCart(cart.map((item) =>
         item._id === product._id ? { ...item, qty: item.qty + 1 } : item
       ));
     } else {
-      setCart([...cart, { ...product, qty: 1 }]);
+      setCart([...cart, { ...productWithImage, qty: 1 }]);
     }
   };
 

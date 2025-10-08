@@ -4,7 +4,7 @@
 
 .profile-edit-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background: linear-gradient(135deg, var(--background-color) 0%, #e9ecef 100%);
   padding: 0;
 }
 
@@ -14,7 +14,7 @@
   align-items: center;
   justify-content: center;
   height: 100vh;
-  color: #a749eb;
+  color: var(--primary-color);
 }
 
 .profile-loading .loading-spinner {

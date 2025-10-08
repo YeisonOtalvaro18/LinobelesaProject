@@ -1,29 +1,56 @@
 /* global.css */
-/* Estilos globales */
-body {
-  margin: 0;
-  font-family: "Segoe UI", sans-serif;
-  background: #fafafa;
-  color: #333;
+
+/* =========================
+   VARIABLES GLOBALES
+========================= */
+:root {
+  --primary-color: #a749eb;
+  --secondary-color: #bd46b7;
+  --background-color: #fafafa;
+  --text-color: #333;
+  --font-family: "Segoe UI", sans-serif;
+  --border-radius: 8px;
+  --transition: all 0.3s ease;
 }
 
+/* =========================
+   RESET Y TIPOGRAFÍA
+========================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: var(--font-family);
+}
 
-/* --- Botones con gradiente global --- */
+body {
+  background: var(--background-color);
+  color: var(--text-color);
+}
 
+/* =========================
+   BOTONES GLOBALES
+========================= */
 button,
 .btn {
-  background: #a749eb;
-  background: radial-gradient(circle, rgba(167, 73, 235, 1) 0%, rgba(189, 70, 183, 1) 100%);
+  background: var(--primary-color);
+  background: radial-gradient(circle, var(--primary-color) 0%, var(--secondary-color) 100%);
   color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   padding: 10px 16px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: var(--transition);
 }
 
 button:hover,
 .btn:hover {
   opacity: 0.9;
   transform: scale(1.02);
+}
+
+/* Animaciones globales */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

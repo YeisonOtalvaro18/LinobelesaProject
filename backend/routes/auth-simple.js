@@ -31,9 +31,10 @@ router.get('/test', (req, res) => {
 });
 
 // Registro de usuario - guarda en colección 'registers'
+// Registro de usuario - guarda en colección 'registers'
 router.post('/register', async (req, res) => {
     try {
-        const { name, lastName, email, password } = req.body;
+        let { name, lastName, email, password, role } = req.body;
 
         if (!name || !lastName || !email || !password) {
             return res.status(400).json({ 
@@ -87,7 +88,7 @@ router.post('/register', async (req, res) => {
                 city: '',
                 country: ''
             },
-            role: 'customer',
+            role: role || 'customer',
             fechaRegistro: new Date()
         });
 
@@ -106,7 +107,7 @@ router.post('/register', async (req, res) => {
             success: true,
             message: 'Usuario registrado exitosamente',
             data: {
-                user: { id: resultado.insertedId, name, lastName, email },
+                user: { id: resultado.insertedId, name, lastName, email, role: role || 'customer' },
                 token
             }
         });

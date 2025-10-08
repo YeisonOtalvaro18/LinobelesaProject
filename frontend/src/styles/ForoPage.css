@@ -1,0 +1,73 @@
+.foro-galeria {
+  max-width: 800px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(108, 12, 191, 0.08);
+  padding: 32px;
+}
+
+.nuevo-comentario textarea,
+.responder textarea {
+  width: 100%;
+  min-height: 60px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  padding: 8px;
+  resize: vertical;
+}
+
+.nuevo-comentario input {
+  margin-bottom: 8px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  padding: 8px;
+  width: 100%;
+}
+
+.nuevo-comentario button,
+.responder button {
+  background: linear-gradient(to left top, #6c0cbf 50%, #ff69b4 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  margin-top: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.comentario {
+  border-bottom: 1px solid #eee;
+  padding: 18px 0;
+}
+
+.comentario-cabecera {
+  font-size: 0.95em;
+  color: #6c0cbf;
+  margin-bottom: 6px;
+}
+
+.comentario-texto {
+  margin-bottom: 8px;
+}
+
+.comentario-reacciones button {
+  background: none;
+  border: none;
+  font-size: 1.2em;
+  margin-right: 12px;
+  cursor: pointer;
+}
+
+.respuesta {
+  background: #f9f6ff;
+  border-radius: 8px;
+  padding: 10px;
+  margin: 8px 0 8px 24px;
+}
+
+.responder textarea {
+  margin-top: 8px;
+}

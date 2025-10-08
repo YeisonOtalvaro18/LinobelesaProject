@@ -1,10 +1,10 @@
 /* ===== FOOTER RESPONSIVE ===== */
 .main-footer {
-  background: linear-gradient(135deg, #a749eb 0%, #bd46b7 100%);
+ background: linear-gradient(to left top, #6c0cbf 50%, #ff69b4 100%);
   color: #fff;
   padding: 0;
   margin-top: 60px;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: var(--font-family);
 }
 
 /* Container principal del footer */

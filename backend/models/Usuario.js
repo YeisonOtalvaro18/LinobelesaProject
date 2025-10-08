@@ -1,130 +1,167 @@
-const bcrypt = require('bcryptjs');
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
-class Usuario {
-  constructor(db) {
-    this.registersCollection = db.collection('registers');
-    this.loginCollection = db.collection('login');
-    this.usersCollection = db.collection('users');
-  }
-
-  async crearUsuario(datosUsuario) {
-    try {
-      // Verificar si el usuario ya existe en registers
-      const usuarioExistente = await this.registersCollection.findOne({ 
-        email: datosUsuario.email 
-      });
-
-      if (usuarioExistente) {
-        throw new Error('El usuario ya existe con este email');
-      }
-
-      // 1. REGISTRO: Guardar en 'registers' (nombre, apellido, correo)
-      const nuevoRegistro = {
-        name: datosUsuario.name,
-        lastName: datosUsuario.lastName,
-        email: datosUsuario.email,
-        createdAt: new Date()
-      };
-
-      const resultadoRegistro = await this.registersCollection.insertOne(nuevoRegistro);
-      
-      // 2. LOGIN: Guardar en 'login' (correo y contraseña encriptada)
-      const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(datosUsuario.password, saltRounds);
-      
-      const datosLogin = {
-        email: datosUsuario.email,
-        password: hashedPassword,
-        registerId: resultadoRegistro.insertedId, // Referencia al registro
-        createdAt: new Date()
-      };
-      
-      const resultadoLogin = await this.loginCollection.insertOne(datosLogin);
-      
-      // 3. USERS: Crear perfil completo en 'users'
-      const datosCompletos = {
-        name: datosUsuario.name,
-        lastName: datosUsuario.lastName,
-        email: datosUsuario.email,
-        role: datosUsuario.role || 'user',
-        registerId: resultadoRegistro.insertedId, // Referencia al registro
-        loginId: resultadoLogin.insertedId, // Referencia al login
-        profile: {
-          firstName: datosUsuario.name,
-          lastName: datosUsuario.lastName,
-          phone: datosUsuario.phone || '',
-          address: datosUsuario.address || '',
-          dateOfBirth: datosUsuario.dateOfBirth || null,
-          gender: datosUsuario.gender || ''
+const usuarioSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true
+    },
+    lastName: {
+        type: String,
+        required: true
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    password: {
+        type: String,
+        required: true
+    },
+    role: {
+        type: String,
+        default: 'customer'
+    },
+    isAdmin: {
+        type: Boolean,
+        default: false
+    },
+    roleDisplayName: {
+        type: String,
+        default: 'Cliente'
+    },
+    permissions: {
+        type: [String],
+        default: []
+    },
+    phone: {
+        type: String,
+        default: ""
+    },
+    profile: {
+        address: {
+            type: String,
+            default: ""
         },
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-      
-      const resultadoUser = await this.usersCollection.insertOne(datosCompletos);
-      
-      // Retornar el usuario completo sin la contraseña
-      const { password, ...usuarioSinPassword } = datosCompletos;
-      usuarioSinPassword._id = resultadoUser.insertedId;
-      
-      return usuarioSinPassword;
-    } catch (error) {
-      throw error;
+        city: {
+            type: String,
+            default: ""
+        },
+        country: {
+            type: String,
+            default: ""
+        },
+        firstName: {
+            type: String,
+            default: ""
+        },
+        lastName: {
+            type: String,
+            default: ""
+        },
+        dateOfBirth: {
+            type: String,
+            default: ""
+        },
+        gender: {
+            type: String,
+            enum: ['male', 'female', 'other'],
+            default: 'other'
+        }
+    },
+    registerId: {
+        type: String,
+        unique: true
+    },
+    loginId: {
+        type: String,
+        unique: true
+    },
+    fechaRegistro: {
+        type: Date,
+        default: Date.now
     }
-  }
+}, {
+    timestamps: true
+});
 
-  async buscarPorEmail(email) {
-    try {
-      // Buscar en la colección login para autenticación
-      const usuario = await this.loginCollection.findOne({ email });
-      return usuario;
-    } catch (error) {
-      throw error;
+// Middleware para generar IDs únicos antes de guardar
+usuarioSchema.pre('save', function(next) {
+    if (!this.registerId) {
+        this.registerId = new mongoose.Types.ObjectId().toString();
     }
-  }
+    if (!this.loginId) {
+        this.loginId = new mongoose.Types.ObjectId().toString();
+    }
+    next();
+});
 
-  async verificarPassword(passwordPlano, passwordHash) {
-    try {
-      return await bcrypt.compare(passwordPlano, passwordHash);
-    } catch (error) {
-      throw error;
+// Clase para manejo de usuarios
+class Usuario {
+    constructor(db) {
+        this.db = db;
+        this.model = mongoose.model('Usuario', usuarioSchema);
     }
-  }
 
-  async buscarPorId(id) {
-    try {
-      const { ObjectId } = require('mongodb');
-      // Buscar en la colección users que tiene el perfil completo
-      const usuario = await this.usersCollection.findOne({ _id: new ObjectId(id) });
-      
-      if (usuario) {
-        // Remover la contraseña del resultado (si existe)
-        const { password, ...usuarioSinPassword } = usuario;
-        return usuarioSinPassword;
-      }
-      
-      return null;
-    } catch (error) {
-      throw error;
-    }
-  }
+    async crearUsuario({ name, lastName, email, password }) {
+        try {
+            // Verificar si el usuario ya existe
+            const usuarioExistente = await this.model.findOne({ email });
+            if (usuarioExistente) {
+                throw new Error('El usuario ya existe con este email');
+            }
 
-  async obtenerTodos() {
-    try {
-      // Obtener todos los usuarios de la colección users
-      const usuarios = await this.usersCollection.find({}).toArray();
-      
-      // Eliminar contraseñas si existen
-      const usuariosSinPassword = usuarios.map(usuario => {
-        const { password, ...usuarioSinPassword } = usuario;
-        return usuarioSinPassword;
-      });
-      
-      return usuariosSinPassword;
-    } catch (error) {
-      throw error;
+            // Hashear la contraseña
+            const saltRounds = 12;
+            const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+            // Crear el usuario
+            const nuevoUsuario = new this.model({
+                name,
+                lastName,
+                email,
+                password: hashedPassword,
+                profile: {
+                    firstName: name,
+                    lastName: lastName
+                }
+            });
+
+            await nuevoUsuario.save();
+
+            // Devolver usuario sin la contraseña
+            const { password: _, ...userSinPassword } = nuevoUsuario.toObject();
+            return userSinPassword;
+
+        } catch (error) {
+            throw error;
+        }
     }
-  }
+
+    async buscarPorEmail(email) {
+        try {
+            return await this.model.findOne({ email });
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async verificarPassword(plainPassword, hashedPassword) {
+        try {
+            return await bcrypt.compare(plainPassword, hashedPassword);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async buscarPorId(id) {
+        try {
+            return await this.model.findById(id).select('-password');
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 
 module.exports = Usuario;

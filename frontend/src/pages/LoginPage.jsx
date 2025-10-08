@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import AuthSuccessModal from "../components/AuthSuccessModal";
+import LoginModal from "../components/LoginModal";
+import RegisterModal from "../components/RegisterModal";
 import "../styles/login.css";
 
 const API_URL = "http://localhost:8000/api/auth";
 
-const LoginPage = ({ onNavigate }) => {
+const LoginPage = ({ onNavigate, onLoginSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
   // Estados para login
   const [loginEmail, setLoginEmail] = useState("");
@@ -68,6 +70,11 @@ const LoginPage = ({ onNavigate }) => {
         localStorage.setItem('token', data.data.token);
         localStorage.setItem('user', JSON.stringify(data.data.user));
         
+        // Llamar callback de login exitoso desde App.jsx
+        if (onLoginSuccess) {
+          onLoginSuccess(data.data.user);
+        }
+        
         // Configurar y mostrar modal
         setCurrentUser(data.data.user);
         setModalType("login");
@@ -119,6 +126,11 @@ const LoginPage = ({ onNavigate }) => {
         localStorage.setItem('token', data.data.token);
         localStorage.setItem('user', JSON.stringify(data.data.user));
         
+        // Llamar callback de login exitoso desde App.jsx
+        if (onLoginSuccess) {
+          onLoginSuccess(data.data.user);
+        }
+        
         // Configurar y mostrar modal
         setCurrentUser(data.data.user);
         setModalType("register");
@@ -149,7 +161,17 @@ const LoginPage = ({ onNavigate }) => {
   // Función para manejar la navegación desde el modal
   const handleModalContinue = () => {
     setShowModal(false);
-    onNavigate('welcome'); // Navegar a la página de bienvenida
+    // Navegar según el rol del usuario
+    if (currentUser) {
+      const isAdmin = currentUser.rol && (currentUser.rol.name === 'admin' || currentUser.rol.name === 'administrador');
+      if (isAdmin) {
+        onNavigate('admin-dashboard');
+      } else {
+        onNavigate('bienvenida');
+      }
+    } else {
+      onNavigate('inicio');
+    }
   };
 
   // Función para cerrar el modal
@@ -291,6 +313,20 @@ const LoginPage = ({ onNavigate }) => {
         onContinue={handleModalContinue}
         onClose={handleModalClose}
       />
+
+      {showModal && modalType === "login" && (
+        <LoginModal 
+          open={showModal} 
+          onClose={() => setShowModal(false)}
+        />
+      )}
+
+      {showModal && modalType === "register" && (
+        <RegisterModal 
+          open={showModal} 
+          onClose={() => setShowModal(false)}
+        />
+      )}
     </div>
   );
 };

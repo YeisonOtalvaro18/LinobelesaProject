@@ -162,6 +162,22 @@ router.post('/login', validacionesLogin, manejarErroresValidacion, async (req, r
 
     // Buscar usuario por email
     const usuario = await usuarioModel.buscarPorEmail(email);
+    
+    // Debug temporal
+    console.log("=== DEBUG BACKEND LOGIN ===");
+    console.log("Email buscado:", email);
+    console.log("Usuario encontrado:", usuario ? "Sí" : "No");
+    if (usuario) {
+      console.log("Datos del usuario:");
+      console.log("- ID:", usuario._id);
+      console.log("- Name:", usuario.name);
+      console.log("- Email:", usuario.email);
+      console.log("- Role:", usuario.role);
+      console.log("- RoleDisplayName:", usuario.roleDisplayName);
+      console.log("- IsAdmin:", usuario.isAdmin);
+      console.log("- Permissions:", usuario.permissions);
+    }
+    
     if (!usuario) {
       return res.status(401).json({
         success: false,

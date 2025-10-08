@@ -40,3 +40,83 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Estilos para el menú desplegable del usuario */
+.user-menu-container {
+  position: relative;
+}
+
+.btn-user {
+  background-color: #6a0dad;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.btn-user:hover {
+  background-color: #7a1fd0;
+}
+
+.user-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  width: 200px;
+  padding: 10px 0;
+}
+
+.user-dropdown button {
+  background: none;
+  border: none;
+  color: #6a0dad;
+  padding: 10px 15px;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.user-dropdown button:hover {
+  background-color: #f3f3f3;
+}
+
+.user-dropdown .divider {
+  height: 1px;
+  background-color: #ddd;
+  margin: 5px 0;
+}
+
+.user-dropdown .icon {
+  margin-right: 10px;
+  color: #6a0dad;
+}
+
+/* Estilos para la casilla desplegable del usuario */
+.dropdown-select {
+  background-color: #6a0dad;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  width: 200px;
+}
+
+.dropdown-select option {
+  background-color: white;
+  color: #6a0dad;
+}
+
+.dropdown-select:focus {
+  outline: none;
+  box-shadow: 0 0 5px #6a0dad;
+}

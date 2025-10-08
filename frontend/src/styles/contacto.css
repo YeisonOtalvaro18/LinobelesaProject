@@ -120,6 +120,82 @@
 }
 
 /* ===== Página principal ===== */
+.contact-page.contact-grid {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 0 60px 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+.contact-extra {
+  background: linear-gradient(135deg, #a749eb 0%, #bd46b7 100%);
+  color: #fff;
+  border-radius: 20px;
+  box-shadow: 0 6px 32px rgba(108, 12, 191, 0.13);
+  padding: 48px 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  min-height: 480px;
+}
+
+.contact-extra h2 {
+  font-size: 1.3rem;
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.contact-social {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.contact-social .social-icon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  border-radius: 50px;
+  padding: 10px 18px;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: background 0.3s, color 0.3s;
+}
+.contact-social .social-icon:hover {
+  background: #ffeb3b;
+  color: #6a0dad;
+}
+.contact-social .social-icon span {
+  font-size: 1.3rem;
+  display: flex;
+}
+
+.contact-map {
+  width: 100%;
+  max-width: 500px;
+  min-height: 300px;
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(108,12,191,0.15);
+}
+
+@media (max-width: 900px) {
+  .contact-page.contact-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .contact-extra {
+    margin-top: 0;
+  }
+}
 .contact-page {
   background: #fafafa;
   display: flex;

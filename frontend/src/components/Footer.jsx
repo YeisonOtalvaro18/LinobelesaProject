@@ -23,7 +23,7 @@ const footerSections = [
   {
     title: "Contacto",
     links: [
-      { label: "Calle 123 #45-67, Bogotá", href: "#", icon: <FaMapMarkerAlt /> },
+      { label: "Calle 67 # 54 - 297", href: "https://www.google.com/maps/place/Cl.+67+%2354-297,+Rionegro,+Antioquia/@6.1671623,-75.3763178,17z/data=!4m6!3m5!1s0x8e469fa601c90a23:0xcbec4b2b274acaac!8m2!3d6.1655256!4d-75.3761163!16s%2Fg%2F11s8xm8jr7?entry=ttu&g_ep=EgoyMDI1MDkyMS4wIKXMDSoASAFQAw%3D%3D", icon: <FaMapMarkerAlt /> },
       { label: "+57 316 0448131", href: "tel:+573160448131", icon: <FaPhone /> },
       { label: "infolinobelesa@gmail.com", href: "mailto:infolinobelesa@gmail.com", icon: <FaEnvelope /> },
     ],
@@ -32,9 +32,9 @@ const footerSections = [
   {
     title: "Síguenos",
     links: [
-      { label: "Facebook", href: "#", icon: <FaFacebookF /> },
-      { label: "Instagram", href: "#", icon: <FaInstagram /> },
-      { label: "TikTok", href: "#", icon: <FaTiktok /> },
+      { label: "Facebook", href: "https://www.facebook.com/p/Linobelesa-100093308496757/", icon: <FaFacebookF /> },
+      { label: "Instagram", href: "https://www.instagram.com/linobelesa/", icon: <FaInstagram /> },
+      { label: "TikTok", href: "https://www.tiktok.com/@linobelesa", icon: <FaTiktok /> },
       { label: "WhatsApp", href: "https://wa.me/573160448131", icon: <FaWhatsapp /> },
     ],
     isSocial: true,

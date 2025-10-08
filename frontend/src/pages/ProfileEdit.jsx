@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
 import "../styles/profile-edit.css";
+import Modal from "../components/Modal"; // Importar el componente Modal
+import UpdateModal from "../components/UpdateModal"; // Importar el modal de actualización
 
 const ProfileEdit = ({ onNavigate }) => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  
-  // Estados para los datos del perfil
+  const [isModalVisible, setIsModalVisible] = useState(false); // Estado para controlar el modal
+
   const [profileData, setProfileData] = useState({
     name: "",
     lastName: "",
@@ -17,11 +19,13 @@ const ProfileEdit = ({ onNavigate }) => {
       firstName: "",
       lastName: "",
       dateOfBirth: "",
-      gender: ""
+      gender: "",
+      address: "", // Nuevo campo
+      city: "",    // Nuevo campo
+      country: ""  // Nuevo campo
     }
   });
 
-  // Estado para los datos originales (para comparar cambios)
   const [originalData, setOriginalData] = useState({});
 
   useEffect(() => {
@@ -46,15 +50,19 @@ const ProfileEdit = ({ onNavigate }) => {
       });
 
       const data = await response.json();
-
+      
       if (data.success) {
         const userData = data.data.user;
-        
-        // Formatear fecha para input date
+
         let formattedDate = "";
         if (userData.profile?.dateOfBirth) {
           const date = new Date(userData.profile.dateOfBirth);
-          formattedDate = date.toISOString().split('T')[0];
+          if (!isNaN(date.getTime())) { // Verificar si la fecha es válida
+            formattedDate = date.toISOString().split('T')[0];
+          } else {
+            console.warn("Fecha inválida detectada en userData.profile.dateOfBirth:", userData.profile.dateOfBirth);
+            formattedDate = ""; // Asignar un valor predeterminado válido
+          }
         }
 
         const formattedData = {
@@ -66,7 +74,10 @@ const ProfileEdit = ({ onNavigate }) => {
             firstName: userData.profile?.firstName || userData.name || "",
             lastName: userData.profile?.lastName || userData.lastName || "",
             dateOfBirth: formattedDate,
-            gender: userData.profile?.gender || ""
+            gender: userData.profile?.gender || "",
+            address: userData.profile?.address || "", // Nuevo campo
+            city: userData.profile?.city || "",       // Nuevo campo
+            country: userData.profile?.country || ""  // Nuevo campo
           }
         };
 
@@ -85,7 +96,7 @@ const ProfileEdit = ({ onNavigate }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
+
     if (name.startsWith('profile.')) {
       const profileField = name.replace('profile.', '');
       setProfileData(prev => ({
@@ -109,7 +120,7 @@ const ProfileEdit = ({ onNavigate }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!hasChanges()) {
       setError("No se han realizado cambios");
       return;
@@ -121,7 +132,7 @@ const ProfileEdit = ({ onNavigate }) => {
 
     try {
       const token = localStorage.getItem('token');
-      
+
       const response = await fetch('http://localhost:8000/api/auth/profile', {
         method: 'PUT',
         headers: {
@@ -136,11 +147,10 @@ const ProfileEdit = ({ onNavigate }) => {
       if (data.success) {
         setSuccess("Perfil actualizado exitosamente");
         setOriginalData(profileData);
-        
-        // Actualizar localStorage con los nuevos datos
+        setIsModalVisible(true); // Mostrar el modal
+
         localStorage.setItem('user', JSON.stringify(data.data.user));
-        
-        // Redirigir después de un momento
+
         setTimeout(() => {
           onNavigate('welcome');
         }, 2000);
@@ -179,11 +189,9 @@ const ProfileEdit = ({ onNavigate }) => {
 
       <div className="profile-edit-content">
         <form onSubmit={handleSubmit} className="profile-form">
-          
           {/* Información Básica */}
           <div className="form-section">
             <h2>Información Básica</h2>
-            
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="name">Nombre *</label>
@@ -196,7 +204,6 @@ const ProfileEdit = ({ onNavigate }) => {
                   required
                 />
               </div>
-              
               <div className="form-group">
                 <label htmlFor="lastName">Apellido *</label>
                 <input
@@ -209,7 +216,6 @@ const ProfileEdit = ({ onNavigate }) => {
                 />
               </div>
             </div>
-
             <div className="form-group">
               <label htmlFor="email">Email *</label>
               <input
@@ -221,7 +227,6 @@ const ProfileEdit = ({ onNavigate }) => {
                 required
               />
             </div>
-
             <div className="form-group">
               <label htmlFor="phone">Teléfono</label>
               <input
@@ -235,10 +240,9 @@ const ProfileEdit = ({ onNavigate }) => {
             </div>
           </div>
 
-          {/* Información del Perfil */}
+          {/* Información Personal */}
           <div className="form-section">
             <h2>Información Personal</h2>
-            
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="profile.firstName">Primer Nombre</label>
@@ -250,7 +254,6 @@ const ProfileEdit = ({ onNavigate }) => {
                   onChange={handleInputChange}
                 />
               </div>
-              
               <div className="form-group">
                 <label htmlFor="profile.lastName">Apellido</label>
                 <input
@@ -262,7 +265,6 @@ const ProfileEdit = ({ onNavigate }) => {
                 />
               </div>
             </div>
-
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="profile.dateOfBirth">Fecha de Nacimiento</label>
@@ -274,7 +276,6 @@ const ProfileEdit = ({ onNavigate }) => {
                   onChange={handleInputChange}
                 />
               </div>
-              
               <div className="form-group">
                 <label htmlFor="profile.gender">Género</label>
                 <select
@@ -289,6 +290,44 @@ const ProfileEdit = ({ onNavigate }) => {
                   <option value="other">Otro</option>
                 </select>
               </div>
+            </div>
+          </div>
+
+          {/* Información de Dirección */}
+          <div className="form-section">
+            <h2>Información de Dirección</h2>
+            <div className="form-group">
+              <label htmlFor="profile.address">Dirección</label>
+              <input
+                type="text"
+                id="profile.address"
+                name="profile.address"
+                value={profileData.profile.address}
+                onChange={handleInputChange}
+                placeholder="Calle Principal 123"
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="profile.city">Ciudad</label>
+              <input
+                type="text"
+                id="profile.city"
+                name="profile.city"
+                value={profileData.profile.city}
+                onChange={handleInputChange}
+                placeholder="Medellín"
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="profile.country">País</label>
+              <input
+                type="text"
+                id="profile.country"
+                name="profile.country"
+                value={profileData.profile.country}
+                onChange={handleInputChange}
+                placeholder="Colombia"
+              />
             </div>
           </div>
 
@@ -315,6 +354,14 @@ const ProfileEdit = ({ onNavigate }) => {
           </div>
         </form>
       </div>
+
+      {/* Modal de éxito */}
+      {isModalVisible && (
+        <UpdateModal 
+          open={isModalVisible} // Usar el modal de actualización
+          onClose={() => setIsModalVisible(false)}
+        />
+      )}
     </div>
   );
 };

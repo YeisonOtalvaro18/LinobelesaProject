@@ -3,7 +3,75 @@ const router = express.Router();
 const connectDB = require('../db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { ObjectId } = require('mongodb');
+const User = require('../models/User'); // Importar el modelo de usuario
+const { verificarToken, verificarAdmin } = require('../middleware/autenticacion');
 
+console.log('Cargando módulo de rutas de usuarios...'); // Debug log
+
+// Rutas de prueba
+router.get('/test', (req, res) => {
+    console.log('Accediendo a ruta de prueba /test');
+    res.json({ message: 'La ruta de usuarios está funcionando' });
+});
+
+// Ruta de prueba con auth
+router.get('/test-auth', verificarToken, (req, res) => {
+    console.log('Accediendo a ruta de prueba con auth /test-auth');
+    res.json({ message: 'Autenticación funcionando', user: req.usuario });
+});
+
+// Ruta de prueba para verificar que el router funciona
+router.get('/test', (req, res) => {
+  res.json({ message: 'Ruta de usuarios funcionando' });
+});
+
+// Ruta para obtener todos los usuarios (solo admin)
+router.get('/', verificarToken, verificarAdmin, async (req, res) => {
+    try {
+        const db = await connectDB();
+        if (!db) {
+            return res.status(500).json({
+                success: false,
+                message: 'Error de conexión a la base de datos'
+            });
+        }
+
+        // Obtener todos los usuarios regulares (de la colección users)
+        const usuarios = await db.collection('users').find({}).toArray();
+        
+        const usuariosConRoles = await Promise.all(usuarios.map(async (usuario) => {
+            let rol = null;
+            if (usuario.roleId) {
+                try {
+                    rol = await db.collection('roles').findOne({ 
+                        _id: new ObjectId(usuario.roleId) 
+                    });
+                } catch (error) {
+                    console.log("Error obteniendo rol para usuario:", usuario.email);
+                }
+            }
+
+            return {
+                id: usuario._id.toString(),
+                nombre: usuario.name || `${usuario.firstName || ''} ${usuario.lastName || ''}`.trim(),
+                email: usuario.email,
+                rol: rol ? rol.displayName : 'Cliente',
+                activo: usuario.status !== 'inactive',
+                fechaRegistro: usuario.createdAt || usuario.createdDate || new Date()
+            };
+        }));
+
+        res.json(usuariosConRoles);
+
+    } catch (error) {
+        console.error('Error obteniendo usuarios:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor'
+        });
+    }
+});
 
 router.post('/register', async (req, res) => {
   const db = await connectDB();
@@ -35,6 +103,199 @@ router.post('/login', async (req, res) => {
 
   const token = jwt.sign({ userId: user._id, name: user.name }, "linobelesa_secret", { expiresIn: "2h" });
   res.json({ success: true, token });
+});
+
+// Ruta para eliminar usuario
+router.delete('/:id', verificarToken, verificarAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const db = await connectDB();
+        if (!db) {
+            return res.status(500).json({
+                success: false,
+                message: 'Error de conexión a la base de datos'
+            });
+        }
+
+        // Verificar si el usuario es admin
+        const usuarioActual = await db.collection('users').findOne({ 
+            _id: new ObjectId(req.usuario.userId) 
+        });
+        
+        if (!usuarioActual) {
+            return res.status(404).json({
+                success: false,
+                message: 'Usuario no encontrado'
+            });
+        }
+
+        // Verificar rol de admin
+        let isAdmin = false;
+        if (usuarioActual.roleId) {
+            const rol = await db.collection('roles').findOne({ 
+                _id: new ObjectId(usuarioActual.roleId) 
+            });
+            isAdmin = rol && rol.name === 'admin';
+        }
+
+        if (!isAdmin) {
+            return res.status(403).json({
+                success: false,
+                message: 'Acceso denegado. Se requieren permisos de administrador'
+            });
+        }
+
+        // Eliminar usuario
+        const result = await db.collection('users').deleteOne({ 
+            _id: new ObjectId(id) 
+        });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Usuario no encontrado'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Usuario eliminado exitosamente'
+        });
+
+    } catch (error) {
+        console.error('Error eliminando usuario:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor'
+        });
+    }
+});
+
+// Ruta para cambiar estado del usuario
+router.put('/:id/status', verificarToken, verificarAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { activo } = req.body;
+        const db = await connectDB();
+        if (!db) {
+            return res.status(500).json({
+                success: false,
+                message: 'Error de conexión a la base de datos'
+            });
+        }
+
+        // Verificar si el usuario es admin
+        const usuarioActual = await db.collection('users').findOne({ 
+            _id: new ObjectId(req.usuario.userId) 
+        });
+        
+        if (!usuarioActual) {
+            return res.status(404).json({
+                success: false,
+                message: 'Usuario no encontrado'
+            });
+        }
+
+        // Verificar rol de admin
+        let isAdmin = false;
+        if (usuarioActual.roleId) {
+            const rol = await db.collection('roles').findOne({ 
+                _id: new ObjectId(usuarioActual.roleId) 
+            });
+            isAdmin = rol && rol.name === 'admin';
+        }
+
+        if (!isAdmin) {
+            return res.status(403).json({
+                success: false,
+                message: 'Acceso denegado. Se requieren permisos de administrador'
+            });
+        }
+
+        // Actualizar estado del usuario
+        const result = await db.collection('users').updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { status: activo ? 'active' : 'inactive' } }
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Usuario no encontrado'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Estado del usuario actualizado exitosamente'
+        });
+
+    } catch (error) {
+        console.error('Error actualizando estado del usuario:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor'
+        });
+    }
+});
+
+// Ruta para actualizar campos específicos del perfil
+router.patch('/:id/profile', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { address, city, country, firstName, lastName, dateOfBirth, gender } = req.body;
+
+        const updateFields = {};
+        if (address !== undefined) updateFields['profile.address'] = address;
+        if (city !== undefined) updateFields['profile.city'] = city;
+        if (country !== undefined) updateFields['profile.country'] = country;
+        if (firstName !== undefined) updateFields['profile.firstName'] = firstName;
+        if (lastName !== undefined) updateFields['profile.lastName'] = lastName;
+        if (dateOfBirth !== undefined) updateFields['profile.dateOfBirth'] = dateOfBirth;
+        if (gender !== undefined) updateFields['profile.gender'] = gender;
+
+        const updatedUser = await User.findByIdAndUpdate(
+            id,
+            { $set: updateFields },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+
+        res.json(updatedUser);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+// Ruta para actualizar solo datos de dirección
+router.patch('/:id/address', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { address, city, country } = req.body;
+
+        const updatedUser = await User.findByIdAndUpdate(
+            id,
+            {
+                $set: {
+                    'profile.address': address,
+                    'profile.city': city,
+                    'profile.country': country
+                }
+            },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+
+        res.json(updatedUser);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
 });
 
 module.exports = router;
