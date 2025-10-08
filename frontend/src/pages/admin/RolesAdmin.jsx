@@ -23,12 +23,13 @@ const Roles = () => {
       });
       
       if (response.ok) {
-        const data = await response.json();
-        setRoles(data);
+        const result = await response.json();
+        setRoles(result.data || result);
       } else {
         setError('Error al cargar roles');
       }
     } catch (err) {
+      console.error('Error fetching roles:', err);
       setError('Error de conexión');
     } finally {
       setLoading(false);

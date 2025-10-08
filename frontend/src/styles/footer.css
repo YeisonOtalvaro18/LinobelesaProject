@@ -1,17 +1,27 @@
 /* ===== FOOTER RESPONSIVE ===== */
 .main-footer {
- background: linear-gradient(to left top, #6c0cbf 50%, #ff69b4 100%);
+  background: linear-gradient(to left top, #6c0cbf 50%, #ff69b4 100%);
   color: #fff;
   padding: 0;
-  margin-top: 60px;
+  margin: 0;
   font-family: var(--font-family);
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  box-sizing: border-box;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 /* Container principal del footer */
 .footer-container {
+  justify-content: space-around;
   max-width: 1200px;
-  margin: 0 auto;
-  padding: 60px 40px 40px;
+  margin: auto;
+  padding: 60px 48px 40px;
   display: grid;
   grid-template-columns: 1fr 2fr;
   gap: 60px;
@@ -48,6 +58,11 @@
   font-size: 1rem;
   line-height: 1.6;
   color: rgba(255, 255, 255, 0.9);
+  max-width: 300px;
+}
+
+/* limitar ancho de la marca para que las secciones puedan usar el espacio restante */
+.footer-brand {
   max-width: 300px;
 }
 
@@ -117,6 +132,14 @@
   transition: all 0.3s ease;
 }
 
+/* Evitar wrapping de iconos y forzar alineación en pantallas grandes */
+.social {
+  white-space: nowrap;
+}
+.social li a {
+  display: inline-flex !important;
+}
+
 .social li a:hover {
   background: #ffeb3b;
   color: #6a0dad !important;
@@ -148,15 +171,15 @@
 
 /* ===== PIE DEL FOOTER ===== */
 .footer-bottom {
-  background: rgba(0, 0, 0, 0.2);
-  padding: 25px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.18);
+  padding: 20px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .copy {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 40px;
+  padding: 0 20px;
   text-align: center;
 }
 
@@ -179,13 +202,44 @@
     padding: 50px 30px 30px;
     gap: 40px;
   }
-  
+
   .footer-sections {
     gap: 30px;
   }
-  
+
   .copy {
     padding: 0 30px;
+  }
+}
+
+/* En pantallas grandes forzamos que las secciones estén en fila y alineadas a la izquierda
+   para que la columna de 'Contactanos' y la de 'Seguinos' queden una al lado de la otra */
+@media (min-width: 900px) {
+  .footer-container {
+    grid-template-columns: 1fr 2fr;
+    text-align: left;
+  }
+  /* Mantener las secciones en una sola fila y evitar que las redes sociales salten abajo */
+  .footer-sections {
+    display: flex;
+    align-items: flex-start;
+    gap: 28px;
+    justify-content: space-between; /* usar espacio disponible entre columnas */
+    flex-wrap: nowrap; /* evitar que 'Seguinos' baje de línea */
+    width: 100%; /* ocupar todo el espacio disponible */
+    box-sizing: border-box;
+  }
+  .footer-section {
+    text-align: left;
+    flex: 1 1 0; /* cada sección toma la misma porción del espacio */
+    min-width: 0; /* permitir que el contenido se reduzca si es necesario */
+    padding: 0 40px; /* separación interna entre secciones */
+  }
+  .social {
+    justify-content: flex-start;
+  }
+  .footer-section ul li a {
+    justify-content: flex-start;
   }
 }
 
@@ -197,29 +251,29 @@
     padding: 40px 20px 30px;
     text-align: center;
   }
-  
+
   .footer-brand {
     align-items: center;
   }
-  
+
   .footer-brand p {
     text-align: center;
     max-width: 400px;
   }
-  
+
   .footer-sections {
     grid-template-columns: repeat(2, 1fr);
     gap: 30px;
   }
-  
+
   .footer-section {
     text-align: left;
   }
-  
+
   .social {
     justify-content: center;
   }
-  
+
   .copy {
     padding: 0 20px;
   }
@@ -230,73 +284,73 @@
   .main-footer {
     margin-top: 40px;
   }
-  
+
   .footer-container {
     padding: 30px 15px 20px;
     gap: 30px;
   }
-  
+
   .footer-logo {
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .footer-logo img {
     height: 50px;
   }
-  
+
   .footer-logo h3 {
     font-size: 1.6rem;
   }
-  
+
   .footer-brand p {
     font-size: 0.9rem;
     max-width: 100%;
   }
-  
+
   .footer-sections {
     grid-template-columns: 1fr;
     gap: 25px;
   }
-  
+
   .footer-section {
     text-align: center;
   }
-  
+
   .footer-section h4 {
     font-size: 1.1rem;
     margin-bottom: 15px;
   }
-  
+
   .footer-section ul {
     gap: 10px;
   }
-  
+
   .footer-section ul li a {
     justify-content: center;
     font-size: 0.9rem;
   }
-  
+
   .contact li a {
     justify-content: center;
     text-align: center;
   }
-  
+
   .social {
     justify-content: center;
     gap: 12px;
   }
-  
+
   .social li a {
     width: 44px;
     height: 44px;
     padding: 10px;
   }
-  
+
   .copy {
     padding: 0 15px;
   }
-  
+
   .copy p {
     font-size: 0.85rem;
   }
@@ -307,36 +361,36 @@
   .footer-container {
     padding: 25px 10px 15px;
   }
-  
+
   .footer-logo h3 {
     font-size: 1.4rem;
   }
-  
+
   .footer-brand p {
     font-size: 0.85rem;
   }
-  
+
   .footer-section h4 {
     font-size: 1rem;
   }
-  
+
   .footer-section ul li a {
     font-size: 0.85rem;
   }
-  
+
   .social li a {
     width: 40px;
     height: 40px;
   }
-  
+
   .social li a .icon {
     font-size: 1.1rem;
   }
-  
+
   .copy p {
     font-size: 0.8rem;
   }
-  
+
   .copy p:last-child {
     font-size: 0.75rem;
   }

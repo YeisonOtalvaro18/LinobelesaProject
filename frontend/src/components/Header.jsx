@@ -7,9 +7,30 @@ import {
   FaArrowUp,
   FaBars,
   FaTimes,
+  FaHome,
+  FaBox,
+  FaStar,
+  FaComments,
+  FaEnvelope,
+  FaUser,
+  FaUserShield,
+  FaUsers,
+  FaWarehouse,
+  FaSignOutAlt,
+  FaChevronDown,
+  FaUserCircle
 } from "react-icons/fa";
 
-function Header({ onNavigate, cart = [], removeFromCart, updateCartItemQuantity, user, isAuthenticated, isAdmin, onLogout }) {
+function Header({
+  onNavigate,
+  cart = [],
+  removeFromCart,
+  updateCartItemQuantity,
+  user,
+  isAuthenticated,
+  isAdmin,
+  onLogout,
+}) {
   const [showSearch, setShowSearch] = useState(false);
   const [showCart, setShowCart] = useState(false);
   const [hideHeader, setHideHeader] = useState(false);
@@ -49,19 +70,19 @@ function Header({ onNavigate, cart = [], removeFromCart, updateCartItemQuantity,
   // Menú según el rol del usuario
   const getMenuItems = () => {
     const baseMenu = [
-      { id: "inicio", label: "Inicio" },
-      { id: "productos", label: "Productos" },
-      { id: "reseñas", label: "Reseñas" },
-      { id: "foro", label: "Foro" },
-      { id: "contacto", label: "Contacto" },
+      { id: "inicio", label: "Inicio", icon: <FaHome /> },
+      { id: "productos", label: "Productos", icon: <FaBox /> },
+      { id: "reseñas", label: "Reseñas", icon: <FaStar /> },
+      { id: "foro", label: "Foro", icon: <FaComments /> },
+      { id: "contacto", label: "Contacto", icon: <FaEnvelope /> },
     ];
 
     // Admin users only get admin-specific navigation
     if (isAdmin) {
       return [
-        { id: "admin-dashboard", label: "Panel Admin" },
-        { id: "usuarios", label: "Usuarios" },
-        { id: "inventario", label: "Inventario" },
+        { id: "admin-dashboard", label: "Panel Admin", icon: <FaUserShield /> },
+        { id: "usuarios", label: "Usuarios", icon: <FaUsers /> },
+        { id: "inventario", label: "Inventario", icon: <FaWarehouse /> },
       ];
     }
 
@@ -84,7 +105,8 @@ function Header({ onNavigate, cart = [], removeFromCart, updateCartItemQuantity,
               {getMenuItems().map((item) => (
                 <li key={item.id}>
                   <button onClick={() => onNavigate?.(item.id)}>
-                    {item.label}
+                    <span className="nav-icon">{item.icon}</span>
+                    <span className="nav-text">{item.label}</span>
                   </button>
                 </li>
               ))}
@@ -119,32 +141,57 @@ function Header({ onNavigate, cart = [], removeFromCart, updateCartItemQuantity,
             {/* Usuario autenticado */}
             {isAuthenticated ? (
               <div className="user-menu-container">
-                <button 
-                  className="btn-user" 
+                <button
+                  className="btn-user"
                   onClick={() => setShowUserMenu(!showUserMenu)}
                 >
-                  {user?.nombre} {isAdmin && '(Admin)'}
+                  <FaUserCircle className="user-icon" />
+                  <span className="header-user-name">{user?.name || user?.nombre || user?.username || 'Usuario'}</span>
+                  {isAdmin && <span className="admin-badge">Admin</span>}
+                  <FaChevronDown className={`chevron ${showUserMenu ? 'rotated' : ''}`} />
                 </button>
                 {showUserMenu && (
                   <div className="user-dropdown">
                     {!isAdmin && (
-                      <button onClick={() => { onNavigate?.("perfil"); setShowUserMenu(false); }}>
-                        Mi Perfil
+                      <button
+                        onClick={() => {
+                          onNavigate?.("perfil");
+                          setShowUserMenu(false);
+                        }}
+                      >
+                        <span className="icon"><FaUser /></span>
+                        <span className="text">Mi Perfil</span>
                       </button>
                     )}
                     {isAdmin && (
-                      <button onClick={() => { onNavigate?.("admin-dashboard"); setShowUserMenu(false); }}>
-                        Panel Admin
+                      <button
+                        onClick={() => {
+                          onNavigate?.("admin-dashboard");
+                          setShowUserMenu(false);
+                        }}
+                      >
+                        <span className="icon"><FaUserShield /></span>
+                        <span className="text">Panel Admin</span>
                       </button>
                     )}
-                    <button onClick={() => { onLogout?.(); setShowUserMenu(false); }}>
-                      Cerrar Sesión
+                    <div className="divider"></div>
+                    <button
+                      onClick={() => {
+                        onLogout?.();
+                        setShowUserMenu(false);
+                      }}
+                    >
+                      <span className="icon"><FaSignOutAlt /></span>
+                      <span className="text">Cerrar Sesión</span>
                     </button>
                   </div>
                 )}
               </div>
             ) : (
-              <button className="btn-login" onClick={() => onNavigate?.("login")}>
+              <button
+                className="btn-login"
+                onClick={() => onNavigate?.("login")}
+              >
                 Login
               </button>
             )}
@@ -168,16 +215,17 @@ function Header({ onNavigate, cart = [], removeFromCart, updateCartItemQuantity,
             {getMenuItems().map((item) => (
               <li key={item.id}>
                 <button onClick={() => handleMobileMenuClick(item.id)}>
-                  {item.label}
+                  <span className="nav-icon">{item.icon}</span>
+                  <span className="nav-text">{item.label}</span>
                 </button>
               </li>
             ))}
           </ul>
-          
+
           {/* Usuario en menú móvil */}
           <div className="mobile-user-section">
             {isAuthenticated && !isAdmin && (
-              <button 
+              <button
                 className="mobile-cart-btn"
                 onClick={() => {
                   setShowCart(true);
@@ -192,26 +240,44 @@ function Header({ onNavigate, cart = [], removeFromCart, updateCartItemQuantity,
             {isAuthenticated ? (
               <div className="mobile-user-menu">
                 <p className="user-welcome">
-                  Hola, {user?.nombre} {isAdmin && '(Admin)'}
+                  Hola, {user?.name || user?.nombre || user?.username || 'Usuario'} {isAdmin && "(Admin)"}
                 </p>
                 {!isAdmin && (
-                  <button onClick={() => { onNavigate?.("perfil"); setShowMobileMenu(false); }}>
+                  <button
+                    onClick={() => {
+                      onNavigate?.("perfil");
+                      setShowMobileMenu(false);
+                    }}
+                  >
                     Mi Perfil
                   </button>
                 )}
                 {isAdmin && (
-                  <button onClick={() => { onNavigate?.("admin-dashboard"); setShowMobileMenu(false); }}>
+                  <button
+                    onClick={() => {
+                      onNavigate?.("admin-dashboard");
+                      setShowMobileMenu(false);
+                    }}
+                  >
                     Panel Admin
                   </button>
                 )}
-                <button onClick={() => { onLogout?.(); setShowMobileMenu(false); }}>
+                <button
+                  onClick={() => {
+                    onLogout?.();
+                    setShowMobileMenu(false);
+                  }}
+                >
                   Cerrar Sesión
                 </button>
               </div>
             ) : (
-              <button 
+              <button
                 className="mobile-login-btn"
-                onClick={() => { onNavigate?.("login"); setShowMobileMenu(false); }}
+                onClick={() => {
+                  onNavigate?.("login");
+                  setShowMobileMenu(false);
+                }}
               >
                 Iniciar Sesión
               </button>
@@ -234,89 +300,102 @@ function Header({ onNavigate, cart = [], removeFromCart, updateCartItemQuantity,
       </div>
 
       {/* Modal Carrito */}
-      <div id="carritoModal" className={`carrito-modal ${showCart ? 'active' : ''}`} onClick={() => setShowCart(false)}>
-          <div
-            className={`carrito-contenido ${showCart ? 'active' : ''}`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3>Carrito de Compras</h3>
-            {cart.length === 0 ? (
-              <div className="cart-empty">
-                <FaShoppingCart />
-                <p>Tu carrito está vacío</p>
-                <p>¡Agrega algunos productos!</p>
-              </div>
-            ) : (
-              <>
-                <div className="cart-items">
-                  {cart.map((item) => (
-                    <div key={item.id} className="cart-item">
-                      <img
-                        src={item.image || item.images?.[0] || '/src/IMG/logolinobelesa.jpg'}
-                        alt={item.name}
-                        className="cart-item-image"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = '/src/IMG/logolinobelesa.jpg';
-                        }}
-                      />
-                      <div className="cart-item-details">
-                        <h4 className="cart-item-name">{item.name}</h4>
-                        <p className="cart-item-price">
-                          ${(item.price * item.qty).toLocaleString('es-CO')}
-                        </p>
-                      </div>
-                      <div className="cart-item-controls">
-                        <button
-                          className="quantity-btn"
-                          onClick={() => updateCartItemQuantity(item._id, item.qty - 1)}
-                          disabled={item.qty <= 1}
-                        >
-                          -
-                        </button>
-                        <span className="quantity-display">{item.qty}</span>
-                        <button
-                          className="quantity-btn"
-                          onClick={() => updateCartItemQuantity(item._id, item.qty + 1)}
-                        >
-                          +
-                        </button>
-                        <button
-                          className="remove-btn"
-                          onClick={() => removeFromCart(item._id)}
-                          title="Eliminar producto"
-                        >
-                          <FaTimes />
-                        </button>
-                      </div>
+      <div
+        id="carritoModal"
+        className={`carrito-modal ${showCart ? "active" : ""}`}
+        onClick={() => setShowCart(false)}
+      >
+        <div
+          className={`carrito-contenido ${showCart ? "active" : ""}`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h3>Carrito de Compras</h3>
+          {cart.length === 0 ? (
+            <div className="cart-empty">
+              <FaShoppingCart />
+              <p>Tu carrito está vacío</p>
+              <p>¡Agrega algunos productos!</p>
+            </div>
+          ) : (
+            <>
+              <div className="cart-items">
+                {cart.map((item) => (
+                  <div key={item._id} className="cart-item">
+                    <img
+                      src={
+                        item.image ||
+                        item.images?.[0] ||
+                        "/src/IMG/logolinobelesa.jpg"
+                      }
+                      alt={item.name}
+                      className="cart-item-image"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "/src/IMG/logolinobelesa.jpg";
+                      }}
+                    />
+                    <div className="cart-item-details">
+                      <h4 className="cart-item-name">{item.name}</h4>
+                      <p className="cart-item-price">
+                        ${(item.price * item.qty).toLocaleString("es-CO")}
+                      </p>
                     </div>
-                  ))}
-                </div>
-                <div className="cart-total">
-                  <span>Total:</span>
-                  <span>${totalPrice.toLocaleString('es-CO')}</span>
-                </div>
-                <div className="cart-actions">
-                  <button
-                    className="cart-button continue-btn"
-                    onClick={() => setShowCart(false)}
-                  >
-                    Seguir Comprando
-                  </button>
-                  <button
-                    className="cart-button checkout-btn"
-                    onClick={() => {
-                      // Implementar checkout
-                      alert('Función de checkout en desarrollo');
-                    }}
-                  >
-                    Finalizar Compra
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+                    <div className="cart-item-controls">
+                      <button
+                        className="quantity-btn"
+                        onClick={() =>
+                          updateCartItemQuantity(item._id, item.qty - 1)
+                        }
+                        disabled={item.qty <= 1}
+                      >
+                        -
+                      </button>
+                      <span className="quantity-display">{item.qty}</span>
+                      <button
+                        className="quantity-btn"
+                        onClick={() =>
+                          updateCartItemQuantity(item._id, item.qty + 1)
+                        }
+                      >
+                        +
+                      </button>
+                      <button
+                        className="remove-btn"
+                        onClick={() => removeFromCart(item._id)}
+                        title="Eliminar producto"
+                      >
+                        <FaTimes />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="cart-total">
+                <span>Total:</span>
+                <span>${totalPrice.toLocaleString("es-CO")}</span>
+              </div>
+              <div className="cart-actions">
+                <button
+                  className="cart-button continue-btn"
+                  onClick={() => setShowCart(false)}
+                >
+                  Seguir Comprando
+                </button>
+                <button
+                  className="cart-button checkout-btn"
+                  onClick={() => {
+                    // Navegar al checkout
+                    setShowCart(false);
+                    onNavigate?.("checkout");
+                  }}
+                >
+                  Finalizar Compra
+                </button>
+              </div>
+            </>
+          )}
         </div>
+      </div>
 
       {/* Botón flotante volver arriba */}
       {showScrollTop && (

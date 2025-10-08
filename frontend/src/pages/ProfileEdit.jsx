@@ -9,6 +9,12 @@ const ProfileEdit = ({ onNavigate }) => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false); // Estado para controlar el modal
+  
+  // Estados para departamentos y ciudades
+  const [departamentos, setDepartamentos] = useState([]);
+  const [ciudades, setCiudades] = useState([]);
+  const [loadingDepartamentos, setLoadingDepartamentos] = useState(false);
+  const [loadingCiudades, setLoadingCiudades] = useState(false);
 
   const [profileData, setProfileData] = useState({
     name: "",
@@ -22,7 +28,8 @@ const ProfileEdit = ({ onNavigate }) => {
       gender: "",
       address: "", // Nuevo campo
       city: "",    // Nuevo campo
-      country: ""  // Nuevo campo
+      department: "", // Nuevo campo
+      country: "Colombia"  
     }
   });
 
@@ -30,7 +37,15 @@ const ProfileEdit = ({ onNavigate }) => {
 
   useEffect(() => {
     cargarPerfil();
+    cargarDepartamentos();
   }, []);
+
+  // Cargar ciudades cuando se carga un departamento existente
+  useEffect(() => {
+    if (profileData.profile.department && !loading) {
+      cargarCiudades(profileData.profile.department);
+    }
+  }, [profileData.profile.department, loading]);
 
   const cargarPerfil = async () => {
     try {
@@ -67,17 +82,18 @@ const ProfileEdit = ({ onNavigate }) => {
 
         const formattedData = {
           name: userData.name || "",
-          lastName: userData.lastName || "",
+          lastName: userData.profile?.lastName || "",
           email: userData.email || "",
           phone: userData.phone || "",
           profile: {
             firstName: userData.profile?.firstName || userData.name || "",
-            lastName: userData.profile?.lastName || userData.lastName || "",
+            lastName: userData.profile?.lastName || "",
             dateOfBirth: formattedDate,
             gender: userData.profile?.gender || "",
             address: userData.profile?.address || "", // Nuevo campo
             city: userData.profile?.city || "",       // Nuevo campo
-            country: userData.profile?.country || ""  // Nuevo campo
+            department: userData.profile?.department || "", // Nuevo campo
+            country: userData.profile?.country || "Colombia"  // Siempre Colombia
           }
         };
 
@@ -94,23 +110,125 @@ const ProfileEdit = ({ onNavigate }) => {
     }
   };
 
+  // Función para cargar departamentos
+  const cargarDepartamentos = async () => {
+    try {
+      setLoadingDepartamentos(true);
+      const response = await fetch('http://localhost:8000/api/departamentos/list');
+      const data = await response.json();
+      
+      if (data.success) {
+        setDepartamentos(data.data);
+      } else {
+        console.error("Error al cargar departamentos:", data.message);
+      }
+    } catch (error) {
+      console.error("Error cargando departamentos:", error);
+    } finally {
+      setLoadingDepartamentos(false);
+    }
+  };
+
+  // Función para cargar ciudades de un departamento
+  const cargarCiudades = async (departamento) => {
+    if (!departamento) {
+      setCiudades([]);
+      return;
+    }
+
+    try {
+      setLoadingCiudades(true);
+      const response = await fetch(`http://localhost:8000/api/departamentos/${encodeURIComponent(departamento)}/ciudades`);
+      const data = await response.json();
+      
+      if (data.success) {
+        setCiudades(data.data);
+      } else {
+        console.error("Error al cargar ciudades:", data.message);
+        setCiudades([]);
+      }
+    } catch (error) {
+      console.error("Error cargando ciudades:", error);
+      setCiudades([]);
+    } finally {
+      setLoadingCiudades(false);
+    }
+  };
+
+  // Función para manejar cambio de departamento
+  const handleDepartmentChange = (e) => {
+    const selectedDepartment = e.target.value;
+    
+    // Actualizar el departamento en el estado
+    setProfileData(prev => ({
+      ...prev,
+      profile: {
+        ...prev.profile,
+        department: selectedDepartment,
+        city: "" // Limpiar la ciudad cuando cambia el departamento
+      }
+    }));
+
+    // Cargar las ciudades del departamento seleccionado
+    cargarCiudades(selectedDepartment);
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
+    // Si es un cambio de departamento, usar la función específica
+    if (name === 'profile.department') {
+      handleDepartmentChange(e);
+      return;
+    }
+
     if (name.startsWith('profile.')) {
       const profileField = name.replace('profile.', '');
-      setProfileData(prev => ({
-        ...prev,
-        profile: {
-          ...prev.profile,
-          [profileField]: value
+      
+      setProfileData(prev => {
+        const newData = {
+          ...prev,
+          profile: {
+            ...prev.profile,
+            [profileField]: value
+          }
+        };
+
+        // Sincronizar firstName con name
+        if (profileField === 'firstName') {
+          newData.name = value;
         }
-      }));
+        // Sincronizar lastName entre profile.lastName y lastName principal
+        if (profileField === 'lastName') {
+          newData.lastName = value;
+        }
+
+        return newData;
+      });
     } else {
-      setProfileData(prev => ({
-        ...prev,
-        [name]: value
-      }));
+      setProfileData(prev => {
+        const newData = {
+          ...prev,
+          [name]: value
+        };
+
+        // Sincronizar name con profile.firstName
+        if (name === 'name') {
+          newData.profile = {
+            ...prev.profile,
+            firstName: value
+          };
+        }
+        // Sincronizar lastName con profile.lastName
+        if (name === 'lastName') {
+          newData.profile = {
+            ...prev.profile,
+            lastName: value
+          };
+        }
+
+        return newData;
+      });
     }
   };
 
@@ -307,27 +425,70 @@ const ProfileEdit = ({ onNavigate }) => {
                 placeholder="Calle Principal 123"
               />
             </div>
-            <div className="form-group">
-              <label htmlFor="profile.city">Ciudad</label>
-              <input
-                type="text"
-                id="profile.city"
-                name="profile.city"
-                value={profileData.profile.city}
-                onChange={handleInputChange}
-                placeholder="Medellín"
-              />
+            
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="profile.department">Departamento</label>
+                <select
+                  id="profile.department"
+                  name="profile.department"
+                  value={profileData.profile.department}
+                  onChange={handleInputChange}
+                  disabled={loadingDepartamentos}
+                >
+                  <option value="">
+                    {loadingDepartamentos ? "Cargando..." : "Seleccionar departamento"}
+                  </option>
+                  {departamentos.map((dept) => (
+                    <option key={dept.id} value={dept.departamento}>
+                      {dept.departamento}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="profile.city">Ciudad</label>
+                <select
+                  id="profile.city"
+                  name="profile.city"
+                  value={profileData.profile.city}
+                  onChange={handleInputChange}
+                  disabled={!profileData.profile.department || loadingCiudades}
+                >
+                  <option value="">
+                    {!profileData.profile.department 
+                      ? "Primero selecciona un departamento" 
+                      : loadingCiudades 
+                      ? "Cargando ciudades..." 
+                      : "Seleccionar ciudad"}
+                  </option>
+                  {ciudades.map((ciudad, index) => (
+                    <option key={index} value={ciudad}>
+                      {ciudad}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
+            
             <div className="form-group">
-              <label htmlFor="profile.country">País</label>
+              <label>País</label>
               <input
                 type="text"
-                id="profile.country"
-                name="profile.country"
-                value={profileData.profile.country}
-                onChange={handleInputChange}
-                placeholder="Colombia"
+                value="Colombia"
+                disabled
+                className="country-readonly"
+                style={{ 
+                  backgroundColor: '#f8f9fa', 
+                  color: '#6c757d',
+                  border: '1px solid #e9ecef',
+                  cursor: 'not-allowed'
+                }}
               />
+              <small style={{ color: '#6c757d', fontSize: '0.875rem' }}>
+                Actualmente solo disponible para Colombia
+              </small>
             </div>
           </div>
 

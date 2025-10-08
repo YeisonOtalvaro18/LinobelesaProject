@@ -9,16 +9,43 @@ function Products({ addToCart, isAdmin = false, isAuthenticated = false }) {
     price: "",
     description: "",
     category: "",
-    image: null
+    image: null,
   });
-  const [cart, setCart] = useState([]);
+  // No usamos estado local de carrito: App.jsx gestiona el carrito global
 
   // 🔄 Cargar productos desde MongoDB
   const fetchProducts = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/products/all`);
+      // intentar leer cache corta en sessionStorage
+      const cacheKey = "products_cache_v1";
+      const raw = sessionStorage.getItem(cacheKey);
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          const age = Date.now() - (parsed.ts || 0);
+          // TTL 10 minutos
+          if (age < 1000 * 60 * 10 && Array.isArray(parsed.data)) {
+            setProducts(parsed.data);
+            return;
+          }
+        } catch {
+          // invalid cache -> continue
+        }
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/products/all`
+      );
       const data = await response.json();
       setProducts(data);
+      try {
+        sessionStorage.setItem(
+          cacheKey,
+          JSON.stringify({ ts: Date.now(), data })
+        );
+      } catch {
+        /* no-fatal */
+      }
     } catch (error) {
       console.error("❌ Error al cargar productos:", error);
     }
@@ -31,19 +58,19 @@ function Products({ addToCart, isAdmin = false, isAuthenticated = false }) {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 1024 * 1024) { // 1MB
+      if (file.size > 1024 * 1024) {
+        // 1MB
         alert("La imagen es demasiado grande. Elige una menor a 1MB.");
         return;
       }
       const reader = new FileReader();
-      reader.onloadend = () => setForm(f => ({ ...f, image: reader.result }));
+      reader.onloadend = () => setForm((f) => ({ ...f, image: reader.result }));
       reader.readAsDataURL(file);
     }
   };
 
   // 📦 Agregar producto al backend
   const handleAddProduct = async (e) => {
-
     e.preventDefault();
     const { name, price, description, category, image } = form;
     if (!name || !price || !description || !category || !image) {
@@ -51,14 +78,23 @@ function Products({ addToCart, isAdmin = false, isAuthenticated = false }) {
       return;
     }
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/products/add`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, price, description, category, image }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/products/add`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, price, description, category, image }),
+        }
+      );
       const data = await response.json();
       if (data.success) {
-        setForm({ name: "", price: "", description: "", category: "", image: null });
+        setForm({
+          name: "",
+          price: "",
+          description: "",
+          category: "",
+          image: null,
+        });
         await fetchProducts();
       } else {
         alert("Error al guardar: " + (data.error || "Error desconocido"));
@@ -74,22 +110,12 @@ function Products({ addToCart, isAdmin = false, isAuthenticated = false }) {
       // Usar la función del carrito global desde App.jsx
       addToCart(product);
     } else {
-      // Función local como fallback (solo para admin que no necesita carrito)
-      const existing = cart.find((item) => item._id === product._id);
-      if (existing) {
-        setCart(cart.map((item) =>
-          item._id === product._id ? { ...item, qty: item.qty + 1 } : item
-        ));
-      } else {
-        setCart([...cart, { ...product, qty: 1 }]);
-      }
+      // Fallback mínimo: si no hay addToCart disponible, notificamos
+      alert("Función de carrito no disponible en este contexto");
     }
   };
 
-  // ❌ Eliminar del carrito
-  const handleRemoveFromCart = (id) => {
-    setCart(cart.filter((item) => item._id !== id));
-  };
+  // ...carrito gestionado globalmente en App.jsx
 
   return (
     <section className="products">
@@ -102,27 +128,31 @@ function Products({ addToCart, isAdmin = false, isAuthenticated = false }) {
             type="text"
             placeholder="Nombre"
             value={form.name}
-            onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
             required
           />
           <input
             type="number"
             placeholder="Precio"
             value={form.price}
-            onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
+            onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
             required
           />
           <textarea
             placeholder="Descripción"
             value={form.description}
-            onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, description: e.target.value }))
+            }
             required
           />
           <input
             type="text"
             placeholder="Categoría"
             value={form.category}
-            onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, category: e.target.value }))
+            }
             required
           />
           <input
@@ -147,10 +177,14 @@ function Products({ addToCart, isAdmin = false, isAuthenticated = false }) {
             </p>
             {/* Botón carrito solo para clientes autenticados (no admin) */}
             {isAuthenticated && !isAdmin && (
-              <button onClick={() => handleAddToCart(prod)}>Añadir al carrito</button>
+              <button onClick={() => handleAddToCart(prod)}>
+                Añadir al carrito
+              </button>
             )}
             {!isAuthenticated && (
-              <button onClick={() => alert("Debes iniciar sesión para comprar")}>
+              <button
+                onClick={() => alert("Debes iniciar sesión para comprar")}
+              >
                 Iniciar sesión para comprar
               </button>
             )}
@@ -158,31 +192,7 @@ function Products({ addToCart, isAdmin = false, isAuthenticated = false }) {
         ))}
       </div>
 
-      {/* 🛍️ Carrito - Solo para clientes */}
-      {isAuthenticated && !isAdmin && (
-        <div className="cart">
-          <h3>🛒 Carrito</h3>
-          {cart.length === 0 ? (
-            <p>Tu carrito está vacío</p>
-          ) : (
-            <ul>
-              {cart.map((item) => (
-                <li key={item._id}>
-                  {item.name} x{item.qty} - $
-                  {(item.price * item.qty).toLocaleString("es-CO")}
-                  <button onClick={() => handleRemoveFromCart(item._id)}>❌</button>
-                </li>
-              ))}
-            </ul>
-          )}
-          {cart.length > 0 && (
-            <p className="total">
-              Total: $
-              {cart.reduce((acc, item) => acc + item.price * item.qty, 0).toLocaleString("es-CO")}
-            </p>
-          )}
-        </div>
-      )}
+      {/* Carrito local eliminado de la vista de Productos (se gestiona desde Header/App) */}
     </section>
   );
 }

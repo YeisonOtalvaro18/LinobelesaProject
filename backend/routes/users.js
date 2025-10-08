@@ -52,10 +52,17 @@ router.get('/', verificarToken, verificarAdmin, async (req, res) => {
                 }
             }
 
+            // Separar nombre y apellidos correctamente
+            const nombreCompleto = usuario.name || '';
+            const firstName = usuario.firstName || nombreCompleto.split(' ')[0] || '';
+            const lastName = usuario.lastName || nombreCompleto.split(' ').slice(1).join(' ') || '';
+
             return {
                 id: usuario._id.toString(),
-                nombre: usuario.name || `${usuario.firstName || ''} ${usuario.lastName || ''}`.trim(),
+                nombre: firstName,
+                apellidos: lastName,
                 email: usuario.email,
+                telefono: usuario.phone || '',
                 rol: rol ? rol.displayName : 'Cliente',
                 activo: usuario.status !== 'inactive',
                 fechaRegistro: usuario.createdAt || usuario.createdDate || new Date()
@@ -66,6 +73,96 @@ router.get('/', verificarToken, verificarAdmin, async (req, res) => {
 
     } catch (error) {
         console.error('Error obteniendo usuarios:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor'
+        });
+    }
+});
+
+// Ruta para crear nuevo usuario (admin)
+router.post('/', verificarToken, verificarAdmin, async (req, res) => {
+    try {
+        const { nombre, apellidos, email, telefono, rol, activo, password } = req.body;
+        const db = await connectDB();
+        if (!db) {
+            return res.status(500).json({
+                success: false,
+                message: 'Error de conexión a la base de datos'
+            });
+        }
+
+        // Validar campos requeridos
+        if (!nombre || !email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: 'Nombre, email y contraseña son campos obligatorios'
+            });
+        }
+
+        // Verificar si el email ya existe
+        const emailExistente = await db.collection('users').findOne({ email });
+        if (emailExistente) {
+            return res.status(409).json({
+                success: false,
+                message: 'El email ya está registrado'
+            });
+        }
+
+        // Encriptar contraseña
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Preparar datos del usuario
+        const nuevoUsuario = {
+            firstName: nombre,
+            lastName: apellidos || '',
+            name: `${nombre} ${apellidos || ''}`.trim(),
+            email,
+            phone: telefono || '',
+            password: hashedPassword,
+            status: activo !== false ? 'active' : 'inactive',
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+
+        // Si se especifica un rol, obtener roleId
+        if (rol && rol !== 'Cliente') {
+            const rolDoc = await db.collection('roles').findOne({ displayName: rol });
+            if (rolDoc) {
+                nuevoUsuario.roleId = rolDoc._id.toString();
+            }
+        }
+
+        // Insertar usuario
+        const resultado = await db.collection('users').insertOne(nuevoUsuario);
+
+        // Obtener rol para la respuesta
+        let rolRespuesta = null;
+        if (nuevoUsuario.roleId) {
+            rolRespuesta = await db.collection('roles').findOne({ 
+                _id: new ObjectId(nuevoUsuario.roleId) 
+            });
+        }
+
+        const respuesta = {
+            id: resultado.insertedId.toString(),
+            nombre: nuevoUsuario.firstName,
+            apellidos: nuevoUsuario.lastName,
+            email: nuevoUsuario.email,
+            telefono: nuevoUsuario.phone,
+            rol: rolRespuesta ? rolRespuesta.displayName : 'Cliente',
+            activo: nuevoUsuario.status !== 'inactive',
+            fechaRegistro: nuevoUsuario.createdAt
+        };
+
+        res.status(201).json({
+            success: true,
+            message: 'Usuario creado exitosamente',
+            usuario: respuesta
+        });
+
+    } catch (error) {
+        console.error('Error creando usuario:', error);
         res.status(500).json({
             success: false,
             message: 'Error interno del servidor'
@@ -164,6 +261,110 @@ router.delete('/:id', verificarToken, verificarAdmin, async (req, res) => {
 
     } catch (error) {
         console.error('Error eliminando usuario:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor'
+        });
+    }
+});
+
+// Ruta para actualizar usuario completo
+router.put('/:id', verificarToken, verificarAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nombre, apellidos, email, telefono, rol, activo } = req.body;
+        const db = await connectDB();
+        if (!db) {
+            return res.status(500).json({
+                success: false,
+                message: 'Error de conexión a la base de datos'
+            });
+        }
+
+        // Verificar si el usuario existe
+        const usuarioExistente = await db.collection('users').findOne({ 
+            _id: new ObjectId(id) 
+        });
+
+        if (!usuarioExistente) {
+            return res.status(404).json({
+                success: false,
+                message: 'Usuario no encontrado'
+            });
+        }
+
+        // Preparar campos para actualizar
+        const updateFields = {
+            updatedAt: new Date()
+        };
+
+        if (nombre !== undefined) {
+            updateFields.firstName = nombre;
+            updateFields.name = `${nombre} ${apellidos || usuarioExistente.lastName || ''}`.trim();
+        }
+        if (apellidos !== undefined) {
+            updateFields.lastName = apellidos;
+            updateFields.name = `${nombre || usuarioExistente.firstName || ''} ${apellidos}`.trim();
+        }
+        if (email !== undefined) updateFields.email = email;
+        if (telefono !== undefined) updateFields.phone = telefono;
+        if (activo !== undefined) updateFields.status = activo ? 'active' : 'inactive';
+
+        // Si se especifica un rol, actualizar roleId
+        if (rol !== undefined && rol !== 'Cliente') {
+            const rolDoc = await db.collection('roles').findOne({ displayName: rol });
+            if (rolDoc) {
+                updateFields.roleId = rolDoc._id.toString();
+            }
+        } else if (rol === 'Cliente') {
+            updateFields.roleId = null;
+        }
+
+        // Actualizar usuario
+        const result = await db.collection('users').updateOne(
+            { _id: new ObjectId(id) },
+            { $set: updateFields }
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Usuario no encontrado'
+            });
+        }
+
+        // Obtener usuario actualizado
+        const usuarioActualizado = await db.collection('users').findOne({ 
+            _id: new ObjectId(id) 
+        });
+
+        // Obtener rol actualizado
+        let rolActualizado = null;
+        if (usuarioActualizado.roleId) {
+            rolActualizado = await db.collection('roles').findOne({ 
+                _id: new ObjectId(usuarioActualizado.roleId) 
+            });
+        }
+
+        const respuesta = {
+            id: usuarioActualizado._id.toString(),
+            nombre: usuarioActualizado.firstName || usuarioActualizado.name?.split(' ')[0] || '',
+            apellidos: usuarioActualizado.lastName || usuarioActualizado.name?.split(' ').slice(1).join(' ') || '',
+            email: usuarioActualizado.email,
+            telefono: usuarioActualizado.phone || '',
+            rol: rolActualizado ? rolActualizado.displayName : 'Cliente',
+            activo: usuarioActualizado.status !== 'inactive',
+            fechaRegistro: usuarioActualizado.createdAt || usuarioActualizado.createdDate || new Date()
+        };
+
+        res.json({
+            success: true,
+            message: 'Usuario actualizado exitosamente',
+            usuario: respuesta
+        });
+
+    } catch (error) {
+        console.error('Error actualizando usuario:', error);
         res.status(500).json({
             success: false,
             message: 'Error interno del servidor'

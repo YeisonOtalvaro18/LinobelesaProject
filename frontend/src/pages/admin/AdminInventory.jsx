@@ -1,14 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import ProductForm from '../../components/ProductForm';
 import '../../styles/inventory.css';
+import {
+  FaBox,
+  FaPlus,
+  FaMinus,
+  FaEdit,
+  FaTrash,
+  FaEye,
+  FaArrowUp,
+  FaImage,
+  FaArrowDown,
+  FaFilter,
+  FaSearch,
+  FaExclamationTriangle,
+  FaTimes,
+  FaCheck,
+  FaShoppingCart,
+  FaDollarSign,
+  FaWarehouse,
+  FaChartBar
+} from 'react-icons/fa';
 
-const Inventory = () => {
+const Inventory = ({ onNavigate }) => {
   const [showForm, setShowForm] = useState(false);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingProduct, setEditingProduct] = useState(null);
   const [filter, setFilter] = useState('all'); // all, low-stock, out-of-stock
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('name'); // name, price, stock, category
+  const [sortOrder, setSortOrder] = useState('asc'); // asc, desc
 
   useEffect(() => {
     fetchProducts();
@@ -94,14 +117,49 @@ const Inventory = () => {
   };
 
   const getFilteredProducts = () => {
+    let filtered = products;
+
+    // Filtrar por estado de stock
     switch (filter) {
       case 'low-stock':
-        return products.filter(product => product.stock > 0 && product.stock <= 10);
+        filtered = filtered.filter(product => product.stock > 0 && product.stock <= 10);
+        break;
       case 'out-of-stock':
-        return products.filter(product => product.stock === 0);
+        filtered = filtered.filter(product => product.stock === 0);
+        break;
       default:
-        return products;
+        break;
     }
+
+    // Filtrar por término de búsqueda
+    if (searchTerm) {
+      filtered = filtered.filter(product =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.category.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Ordenar
+    filtered.sort((a, b) => {
+      let aValue = a[sortBy];
+      let bValue = b[sortBy];
+
+      if (sortBy === 'price' || sortBy === 'stock') {
+        aValue = Number(aValue);
+        bValue = Number(bValue);
+      } else {
+        aValue = String(aValue).toLowerCase();
+        bValue = String(bValue).toLowerCase();
+      }
+
+      if (sortOrder === 'asc') {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+
+    return filtered;
   };
 
   const getStockStatus = (stock) => {
@@ -122,8 +180,20 @@ const Inventory = () => {
 
   return (
     <div className="inventory-management">
+      {/* Botón volver al dashboard */}
+      <button 
+        className="back-to-dashboard" 
+        onClick={() => onNavigate && onNavigate('admin-dashboard')}
+      >
+        ← Volver al Dashboard
+      </button>
+
       <div className="inventory-header">
-        <h2>Gestión de Inventario</h2>
+        <div className="header-title">
+          <FaWarehouse className="header-icon" />
+          <h2>Gestión de Inventario</h2>
+        </div>
+        
         <button 
           className="add-product-button"
           onClick={() => {
@@ -131,20 +201,57 @@ const Inventory = () => {
             setEditingProduct(null);
           }}
         >
-          {showForm ? 'Ver Lista de Productos' : 'Agregar Nuevo Producto'}
+          {showForm ? (
+            <>
+              <FaEye className="btn-icon" />
+              Ver Lista de Productos
+            </>
+          ) : (
+            <>
+              <FaPlus className="btn-icon" />
+              Agregar Nuevo Producto
+            </>
+          )}
         </button>
-        <div className="inventory-stats">
-          <div className="stat">
+      </div>
+
+      <div className="inventory-stats">
+        <div className="stat-card total">
+          <div className="stat-icon">
+            <FaBox />
+          </div>
+          <div className="stat-info">
             <span className="number">{products.length}</span>
             <span className="label">Total Productos</span>
           </div>
-          <div className="stat">
+        </div>
+        <div className="stat-card no-stock">
+          <div className="stat-icon">
+            <FaExclamationTriangle />
+          </div>
+          <div className="stat-info">
             <span className="number">{products.filter(p => p.stock === 0).length}</span>
             <span className="label">Sin Stock</span>
           </div>
-          <div className="stat">
+        </div>
+        <div className="stat-card low-stock">
+          <div className="stat-icon">
+            <FaChartBar />
+          </div>
+          <div className="stat-info">
             <span className="number">{products.filter(p => p.stock > 0 && p.stock <= 10).length}</span>
             <span className="label">Stock Bajo</span>
+          </div>
+        </div>
+        <div className="stat-card value">
+          <div className="stat-icon">
+            <FaDollarSign />
+          </div>
+          <div className="stat-info">
+            <span className="number">
+              ${products.reduce((total, p) => total + (p.price * p.stock), 0).toLocaleString()}
+            </span>
+            <span className="label">Valor Inventario</span>
           </div>
         </div>
       </div>
@@ -160,23 +267,68 @@ const Inventory = () => {
         />
       ) : (
         <div>
+          {/* Barra de búsqueda y filtros */}
+          <div className="inventory-controls">
+            <div className="search-container">
+              <FaSearch className="search-icon" />
+              <input
+                type="text"
+                placeholder="Buscar productos..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+              />
+              {searchTerm && (
+                <button 
+                  className="clear-search"
+                  onClick={() => setSearchTerm('')}
+                >
+                  <FaTimes />
+                </button>
+              )}
+            </div>
+
+            <div className="sort-container">
+              <label>Ordenar por:</label>
+              <select 
+                value={sortBy} 
+                onChange={(e) => setSortBy(e.target.value)}
+                className="sort-select"
+              >
+                <option value="name">Nombre</option>
+                <option value="category">Categoría</option>
+                <option value="price">Precio</option>
+                <option value="stock">Stock</option>
+              </select>
+              <button 
+                className="sort-order"
+                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+              >
+                {sortOrder === 'asc' ? <FaArrowUp /> : <FaArrowDown />}
+              </button>
+            </div>
+          </div>
+
           <div className="inventory-filters">
             <button 
               className={filter === 'all' ? 'active' : ''}
               onClick={() => setFilter('all')}
             >
+              <FaBox className="filter-icon" />
               Todos ({products.length})
             </button>
             <button 
               className={filter === 'low-stock' ? 'active' : ''}
               onClick={() => setFilter('low-stock')}
             >
+              <FaChartBar className="filter-icon" />
               Stock Bajo ({products.filter(p => p.stock > 0 && p.stock <= 10).length})
             </button>
             <button 
               className={filter === 'out-of-stock' ? 'active' : ''}
               onClick={() => setFilter('out-of-stock')}
             >
+              <FaExclamationTriangle className="filter-icon" />
               Sin Stock ({products.filter(p => p.stock === 0).length})
             </button>
           </div>
@@ -200,13 +352,31 @@ const Inventory = () => {
                   return (
                     <tr key={product._id}>
                       <td>
-                        <img 
-                          src={product.imageUrl} 
-                          alt={product.name} 
-                          className="product-thumb" 
-                        />
+                        <div className="product-image-container">
+                          {product.imageUrl ? (
+                            <img 
+                              src={product.imageUrl.startsWith('http') ? product.imageUrl : `http://localhost:8000${product.imageUrl}`}
+                              alt={product.name} 
+                              className="product-thumb"
+                              onError={(e) => {
+                                e.target.src = '/placeholder-image.svg';
+                                e.target.onerror = null;
+                              }}
+                            />
+                          ) : (
+                            <div className="no-image-placeholder">
+                              <FaImage className="no-image-icon" />
+                              <span>Sin imagen</span>
+                            </div>
+                          )}
+                        </div>
                       </td>
-                      <td>{product.name}</td>
+                      <td>
+                        <div className="product-name-cell">
+                          <span className="product-name">{product.name}</span>
+                          <span className="product-id">ID: {product._id}</span>
+                        </div>
+                      </td>
                       <td>{product.category}</td>
                       <td>${product.price}</td>
                       <td>
@@ -232,8 +402,9 @@ const Inventory = () => {
                                 "Reposición: +10 unidades"
                               )}
                               className="btn-restock"
+                              title="Agregar 10 unidades"
                             >
-                              +10
+                              <FaPlus /> 10
                             </button>
                             <button 
                               onClick={() => updateStock(
@@ -242,8 +413,9 @@ const Inventory = () => {
                                 "Reposición: +50 unidades"
                               )}
                               className="btn-restock"
+                              title="Agregar 50 unidades"
                             >
-                              +50
+                              <FaPlus /> 50
                             </button>
                           </div>
                         </div>
@@ -254,8 +426,22 @@ const Inventory = () => {
                         </span>
                       </td>
                       <td>
-                        <button onClick={() => handleEdit(product)}>Editar</button>
-                        <button onClick={() => handleDelete(product._id)}>Eliminar</button>
+                        <div className="action-buttons">
+                          <button 
+                            onClick={() => handleEdit(product)} 
+                            className="btn-edit"
+                            title="Editar producto"
+                          >
+                            <FaEdit />
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(product._id)} 
+                            className="btn-delete"
+                            title="Eliminar producto"
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );

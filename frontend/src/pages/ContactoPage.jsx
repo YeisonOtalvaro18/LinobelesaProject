@@ -63,16 +63,75 @@ export default function ContactForm() {
             <a href="https://wa.me/573160448131" target="_blank" rel="noopener noreferrer" className="social-icon"><span><i className="fab fa-whatsapp"></i></span> WhatsApp</a>
           </div>
           <div className="contact-map">
-            <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.234073624663!2d-75.3763178!3d6.1671623!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e469fa601c90a23%3A0xcbec4b2b274acaac!2sCl.%2067%20%2354-297%2C%20Rionegro%2C%20Antioquia!5e0!3m2!1ses-419!2sco!4v1695734400000!5m2!1ses-419!2sco"
-              width="100%"
-              height="220"
-              style={{ border: 0, borderRadius: '12px', boxShadow: '0 2px 12px rgba(108,12,191,0.13)' }}
-              allowFullScreen=""
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              title="Ubicación Linobelesa"
-            ></iframe>
+            <div style={{ position: 'relative' }}>
+              <iframe
+                src="https://www.openstreetmap.org/export/embed.html?bbox=-75.3803178%2C6.1651623%2C-75.3723178%2C6.1691623&amp;layer=mapnik&amp;marker=6.1671623%2C-75.3763178"
+                width="100%"
+                height="220"
+                style={{ 
+                  border: 0, 
+                  borderRadius: '12px', 
+                  boxShadow: '0 2px 12px rgba(108,12,191,0.13)' 
+                }}
+                allowFullScreen=""
+                loading="lazy"
+                title="Ubicación Linobelesa - OpenStreetMap"
+              />
+              
+              {/* Overlay con información y enlaces */}
+              <div style={{
+                position: 'absolute',
+                bottom: '15px',
+                left: '15px',
+                right: '15px',
+                background: 'rgba(108, 12, 191, 0.95)',
+                borderRadius: '8px',
+                padding: '10px 15px',
+                color: 'white',
+                fontSize: '12px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '10px'
+              }}>
+                <div>
+                  <strong>Cl. 67 #54-297, Rionegro</strong>
+                </div>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <a 
+                    href="https://maps.google.com/?q=6.1671623,-75.3763178" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{ 
+                      color: 'white', 
+                      textDecoration: 'none',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      background: 'rgba(255,255,255,0.2)',
+                      fontSize: '11px'
+                    }}
+                  >
+                    Google Maps
+                  </a>
+                  <a 
+                    href="https://waze.com/ul?q=Cl.%2067%20%2354-297%2C%20Rionegro%2C%20Antioquia" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{ 
+                      color: 'white', 
+                      textDecoration: 'none',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      background: 'rgba(255,255,255,0.2)',
+                      fontSize: '11px'
+                    }}
+                  >
+                    Waze
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         {/* Modal de éxito elegante */}

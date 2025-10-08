@@ -1,8 +1,10 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const { ObjectId } = require('mongodb');
 const conectarDB = require('../db');
+const EmailService = require('../services/emailService');
 
 const router = express.Router();
 
@@ -254,6 +256,8 @@ router.post('/register', async (req, res) => {
             phone: '',
             roleId: rolCustomer._id,
             status: 'active',
+            registerId: new ObjectId().toString(), // Generar registerId único
+            loginId: new ObjectId().toString(),    // Generar loginId único
             profile: {
                 firstName: name,
                 lastName: lastName,
@@ -265,6 +269,7 @@ router.post('/register', async (req, res) => {
             updatedAt: new Date()
         };
 
+        console.log('Datos del usuario a insertar:', JSON.stringify(nuevoUsuario, null, 2));
         const result = await db.collection('users').insertOne(nuevoUsuario);
         
         // Generar token JWT
@@ -458,10 +463,42 @@ router.get('/profile', verificarToken, async (req, res) => {
     }
 });
 
+// Función helper para validar mayoría de edad
+const validarMayoriaDeEdad = (fechaNacimiento) => {
+    if (!fechaNacimiento) return true; // Si no se proporciona fecha, no validamos
+    
+    const hoy = new Date();
+    const fechaNac = new Date(fechaNacimiento);
+    
+    // Verificar que la fecha sea válida
+    if (isNaN(fechaNac.getTime())) {
+        throw new Error('Fecha de nacimiento inválida');
+    }
+    
+    // Verificar que la fecha no sea futura
+    if (fechaNac > hoy) {
+        throw new Error('La fecha de nacimiento no puede ser futura');
+    }
+    
+    // Calcular la edad
+    let edad = hoy.getFullYear() - fechaNac.getFullYear();
+    const mesActual = hoy.getMonth();
+    const diaActual = hoy.getDate();
+    const mesNacimiento = fechaNac.getMonth();
+    const diaNacimiento = fechaNac.getDate();
+    
+    // Ajustar la edad si aún no ha cumplido años este año
+    if (mesActual < mesNacimiento || (mesActual === mesNacimiento && diaActual < diaNacimiento)) {
+        edad--;
+    }
+    
+    return edad >= 18;
+};
+
 // Ruta para actualizar perfil de usuario
 router.put('/profile', verificarToken, async (req, res) => {
     try {
-        const { name, phone, profile, addresses } = req.body;
+        const { name, lastName, phone, profile, addresses } = req.body;
         
         const db = await conectarDB();
         if (!db) {
@@ -471,12 +508,31 @@ router.put('/profile', verificarToken, async (req, res) => {
             });
         }
 
+        // Validar fecha de nacimiento si se proporciona en el perfil
+        if (profile && profile.dateOfBirth) {
+            try {
+                const esMayorDeEdad = validarMayoriaDeEdad(profile.dateOfBirth);
+                if (!esMayorDeEdad) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Debes ser mayor de 18 años para registrarte en la plataforma'
+                    });
+                }
+            } catch (error) {
+                return res.status(400).json({
+                    success: false,
+                    message: error.message
+                });
+            }
+        }
+
         // Preparar campos a actualizar
         const updateFields = {
             updatedAt: new Date()
         };
 
         if (name) updateFields.name = name;
+        if (lastName) updateFields.lastName = lastName;
         if (phone !== undefined) updateFields.phone = phone;
         if (profile) updateFields.profile = profile;
         if (addresses) updateFields.addresses = addresses;
@@ -536,6 +592,270 @@ router.put('/profile', verificarToken, async (req, res) => {
 
     } catch (error) {
         console.error('Error actualizando perfil:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor'
+        });
+    }
+});
+
+// Ruta para solicitar restablecimiento de contraseña
+router.post('/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        // Validar email
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: 'El email es obligatorio'
+            });
+        }
+
+        const db = await conectarDB();
+        if (!db) {
+            return res.status(500).json({
+                success: false,
+                message: 'Error de conexión a la base de datos'
+            });
+        }
+
+        // Buscar usuario en ambas colecciones (usuarios y users)
+        let usuario = await db.collection('usuarios').findOne({ email });
+        let isAdmin = true;
+        
+        if (!usuario) {
+            usuario = await db.collection('users').findOne({ email });
+            isAdmin = false;
+        }
+
+        if (!usuario) {
+            // Por seguridad, siempre devolvemos éxito aunque el email no exista
+            return res.json({
+                success: true,
+                message: 'Si el email existe, se ha enviado un enlace de restablecimiento'
+            });
+        }
+
+        // Generar token de restablecimiento
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hora
+
+        // Guardar token en la base de datos
+        const collection = isAdmin ? 'usuarios' : 'users';
+        await db.collection(collection).updateOne(
+            { _id: usuario._id },
+            {
+                $set: {
+                    resetPasswordToken: resetToken,
+                    resetPasswordExpiry: resetTokenExpiry,
+                    updatedAt: new Date()
+                }
+            }
+        );
+
+        // Enviar email
+        try {
+            await EmailService.sendPasswordResetEmail(
+                email, 
+                resetToken, 
+                usuario.name || usuario.nombre || 'Usuario'
+            );
+            
+            console.log(`✅ Email de restablecimiento enviado a: ${email}`);
+            
+            res.json({
+                success: true,
+                message: 'Se ha enviado un enlace de restablecimiento a tu email'
+            });
+            
+        } catch (emailError) {
+            console.error('❌ Error enviando email:', emailError);
+            
+            // Limpiar el token si no se pudo enviar el email
+            await db.collection(collection).updateOne(
+                { _id: usuario._id },
+                {
+                    $unset: {
+                        resetPasswordToken: "",
+                        resetPasswordExpiry: ""
+                    }
+                }
+            );
+            
+            res.status(500).json({
+                success: false,
+                message: 'Error al enviar el email. Inténtalo más tarde'
+            });
+        }
+
+    } catch (error) {
+        console.error('❌ Error en forgot-password:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor'
+        });
+    }
+});
+
+// Ruta para verificar token de restablecimiento
+router.get('/verify-reset-token/:token', async (req, res) => {
+    try {
+        const { token } = req.params;
+
+        if (!token) {
+            return res.status(400).json({
+                success: false,
+                message: 'Token requerido'
+            });
+        }
+
+        const db = await conectarDB();
+        if (!db) {
+            return res.status(500).json({
+                success: false,
+                message: 'Error de conexión a la base de datos'
+            });
+        }
+
+        // Buscar usuario con el token válido en ambas colecciones
+        let usuario = await db.collection('usuarios').findOne({
+            resetPasswordToken: token,
+            resetPasswordExpiry: { $gt: new Date() }
+        });
+        let isAdmin = true;
+
+        if (!usuario) {
+            usuario = await db.collection('users').findOne({
+                resetPasswordToken: token,
+                resetPasswordExpiry: { $gt: new Date() }
+            });
+            isAdmin = false;
+        }
+
+        if (!usuario) {
+            return res.status(400).json({
+                success: false,
+                message: 'Token inválido o expirado'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Token válido',
+            data: {
+                email: usuario.email,
+                name: usuario.name || usuario.nombre
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Error verificando token:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor'
+        });
+    }
+});
+
+// Ruta para restablecer contraseña
+router.post('/reset-password', async (req, res) => {
+    try {
+        const { token, newPassword, confirmPassword } = req.body;
+
+        // Validaciones
+        if (!token || !newPassword || !confirmPassword) {
+            return res.status(400).json({
+                success: false,
+                message: 'Todos los campos son obligatorios'
+            });
+        }
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({
+                success: false,
+                message: 'Las contraseñas no coinciden'
+            });
+        }
+
+        if (newPassword.length < 8) {
+            return res.status(400).json({
+                success: false,
+                message: 'La contraseña debe tener al menos 8 caracteres'
+            });
+        }
+
+        const db = await conectarDB();
+        if (!db) {
+            return res.status(500).json({
+                success: false,
+                message: 'Error de conexión a la base de datos'
+            });
+        }
+
+        // Buscar usuario con el token válido
+        let usuario = await db.collection('usuarios').findOne({
+            resetPasswordToken: token,
+            resetPasswordExpiry: { $gt: new Date() }
+        });
+        let isAdmin = true;
+        let collection = 'usuarios';
+
+        if (!usuario) {
+            usuario = await db.collection('users').findOne({
+                resetPasswordToken: token,
+                resetPasswordExpiry: { $gt: new Date() }
+            });
+            isAdmin = false;
+            collection = 'users';
+        }
+
+        if (!usuario) {
+            return res.status(400).json({
+                success: false,
+                message: 'Token inválido o expirado'
+            });
+        }
+
+        // Hashear nueva contraseña
+        const saltRounds = 12;
+        const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+        // Actualizar contraseña y limpiar tokens
+        await db.collection(collection).updateOne(
+            { _id: usuario._id },
+            {
+                $set: {
+                    password: hashedPassword,
+                    updatedAt: new Date()
+                },
+                $unset: {
+                    resetPasswordToken: "",
+                    resetPasswordExpiry: ""
+                }
+            }
+        );
+
+        // Enviar notificación de cambio de contraseña
+        try {
+            await EmailService.sendPasswordChangedNotification(
+                usuario.email,
+                usuario.name || usuario.nombre || 'Usuario'
+            );
+        } catch (emailError) {
+            console.error('❌ Error enviando notificación:', emailError);
+            // No fallar por esto, es solo una notificación
+        }
+
+        console.log(`✅ Contraseña restablecida para: ${usuario.email}`);
+
+        res.json({
+            success: true,
+            message: 'Contraseña restablecida exitosamente'
+        });
+
+    } catch (error) {
+        console.error('❌ Error restableciendo contraseña:', error);
         res.status(500).json({
             success: false,
             message: 'Error interno del servidor'

@@ -1,0 +1,7 @@
+<!-- Placeholder SVG for products without image -->
+<svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="50" height="50" fill="#E5E7EB"/>
+<path d="M15 15H35V35H15V15Z" stroke="#9CA3AF" stroke-width="2" fill="none"/>
+<circle cx="20" cy="22" r="2" fill="#9CA3AF"/>
+<path d="M15 30L20 25L25 30L30 25L35 30V35H15V30Z" fill="#9CA3AF"/>
+</svg>

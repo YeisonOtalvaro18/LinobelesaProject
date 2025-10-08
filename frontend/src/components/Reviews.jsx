@@ -1,43 +1,51 @@
-const API_URL = "http://localhost:8000/api/reviews"; 
+import React, { useState } from "react";
+import "../styles/reviews.css";
 
-const Reviews = {
-  async getAll() {
-    const res = await fetch(API_URL);
-    return await res.json();
-  },
-  async create(comentario) {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(comentario),
-    });
-    return await res.json();
-  },
-  async addReply(id, respuesta) {
-    const res = await fetch(`${API_URL}/${id}/reply`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(respuesta),
-    });
-    return await res.json();
-  },
-  async react(id, tipo) {
-    const res = await fetch(`${API_URL}/${id}/react`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tipo }),
-    });
-    return await res.json();
-  },
-  async reactReply(id, idxResp, tipo) {
-    const res = await fetch(`${API_URL}/${id}/reply/${idxResp}/react`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tipo }),
-    });
-    return await res.json();
-  },
-};
+function Reviews() {
+  const [comentarios, setComentarios] = useState([]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const input = e.target.elements.comentario;
+    if (input.value.trim() !== "") {
+      setComentarios([...comentarios, input.value]);
+      input.value = "";
+    }
+  };
+
+  return (
+    <section className="foro-section">
+      <h1 className="foro-title">Foro de la comunidad</h1>
+      <div className="foro-card">
+        {/* Lista de comentarios */}
+        <div className="foro-comentarios">
+          {comentarios.length === 0 ? (
+            <p className="sin-comentarios">
+              Sé la primera en dejar tu comentario 
+            </p>
+          ) : (
+            <ul>
+              {comentarios.map((c, i) => (
+                <li key={i} className="comentario">
+                  <strong>Usuario {i + 1}:</strong> {c}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Formulario abajo */}
+        <form className="foro-form" onSubmit={handleSubmit}>
+          <textarea
+            name="comentario"
+            placeholder="Escribe tu opinión o pregunta..."
+            required
+          ></textarea>
+          <button type="submit">Publicar</button>
+        </form>
+      </div>
+    </section>
+  );
+}
 
 export default Reviews;
-Reviews

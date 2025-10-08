@@ -3,17 +3,114 @@ const router = express.Router();
 const connectDB = require('../db');
 const { ObjectId } = require('mongodb');
 
-router.get('/all', async (req, res) => {
+// Ruta de debug para verificar la base de datos
+router.get('/debug', async (req, res) => {
   try {
     const db = await connectDB();
     if (!db) {
+      return res.status(500).json({ error: 'No se pudo conectar a la base de datos' });
+    }
+
+    const collections = await db.listCollections().toArray();
+    const products = db.collection('products');
+    const productCount = await products.countDocuments();
+    const sampleProducts = await products.find().limit(3).toArray();
+
+    res.json({
+      message: 'Debug de base de datos',
+      database: 'DataLinobelesa',
+      collections: collections.map(c => c.name),
+      productCount,
+      sampleProducts
+    });
+  } catch (err) {
+    console.error('Error en debug:', err);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// Ruta para crear productos de prueba
+router.post('/seed', async (req, res) => {
+  try {
+    const db = await connectDB();
+    if (!db) {
+      return res.status(500).json({ error: 'No se pudo conectar a la base de datos' });
+    }
+
+    const products = db.collection('products');
+    const existingCount = await products.countDocuments();
+
+    if (existingCount > 0) {
+      return res.json({ message: `Ya existen ${existingCount} productos en la base de datos` });
+    }
+
+    const sampleProducts = [
+      {
+        name: 'Champú Reparador',
+        description: 'Champú especial para cabello dañado',
+        category: 'Cuidado Capilar',
+        price: 25000,
+        images: ['/src/IMG/CHAMPUS-AROMINA-BIO.jpg'],
+        stock: 10,
+        createdAt: new Date()
+      },
+      {
+        name: 'Cepillo Desenredante',
+        description: 'Cepillo suave para todo tipo de cabello',
+        category: 'Accesorios',
+        price: 15000,
+        images: ['/src/IMG/cepillo.jpg'],
+        stock: 20,
+        createdAt: new Date()
+      },
+      {
+        name: 'Tratamiento Keratina',
+        description: 'Tratamiento profesional con keratina brasileña',
+        category: 'Tratamientos',
+        price: 85000,
+        images: ['/src/IMG/brazilianKeratina.jpg'],
+        stock: 5,
+        createdAt: new Date()
+      }
+    ];
+
+    const result = await products.insertMany(sampleProducts);
+    
+    res.json({ 
+      message: 'Productos de prueba creados exitosamente',
+      insertedCount: result.insertedCount,
+      products: sampleProducts
+    });
+  } catch (err) {
+    console.error('Error al crear productos de prueba:', err);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+router.get('/all', async (req, res) => {
+  try {
+    console.log('🔍 GET /api/products/all - Solicitando todos los productos');
+    
+    const db = await connectDB();
+    if (!db) {
+      console.error('❌ No se pudo conectar a la base de datos');
       return res.status(500).json({ success: false, error: 'No se pudo conectar a la base de datos' });
     }
+    
+    console.log('✅ Conexión a DB exitosa, accediendo a colección products');
     const products = db.collection('products');
+    
+    // Contar productos antes de obtenerlos
+    const productCount = await products.countDocuments();
+    console.log(`📊 Total de productos en la colección: ${productCount}`);
+    
     const allProducts = await products.find().toArray();
+    console.log(`📦 Productos obtenidos: ${allProducts.length}`);
+    console.log('📋 Primeros productos:', allProducts.slice(0, 2));
+    
     res.json(allProducts);
   } catch (err) {
-    console.error('Error al obtener productos:', err);
+    console.error('❌ Error al obtener productos:', err);
     res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
