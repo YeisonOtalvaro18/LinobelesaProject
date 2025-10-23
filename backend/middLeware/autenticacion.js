@@ -37,18 +37,52 @@ const verificarAdmin = async (req, res, next) => {
             });
         }
 
-        // Primero intentamos encontrar al usuario en la colección 'usuarios' (admins)
-        let adminActual = await db.collection('usuarios').findOne({ 
-            _id: new ObjectId(req.usuario.userId) 
-        });
-
-        // Si no está en 'usuarios', buscamos en la colección 'login'
-        if (!adminActual) {
-            adminActual = await db.collection('login').findOne({
-                _id: new ObjectId(req.usuario.userId)
-            });
+        const userId = req.usuario?.userId;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'Token inválido' });
         }
-        
+
+        const idQuery = ObjectId.isValid(userId) ? new ObjectId(userId) : userId;
+
+        // 1) Buscar admin clásico en 'usuarios'
+        let adminActual = await db.collection('usuarios').findOne({ _id: idQuery });
+
+        // 2) Buscar en 'login' (soporte legado)
+        if (!adminActual) {
+            adminActual = await db.collection('login').findOne({ _id: idQuery });
+        }
+
+        // 3) Como alternativa, permitir admins desde 'users' si el rol es admin
+        let adminDesdeUsers = null;
+        if (!adminActual) {
+            adminDesdeUsers = await db.collection('users').findOne({ _id: idQuery });
+            if (adminDesdeUsers) {
+                let esAdmin = false;
+                // Caso 3a: campo isAdmin booleano
+                if (adminDesdeUsers.isAdmin === true) esAdmin = true;
+
+                // Caso 3b: campo role string directamente
+                if (adminDesdeUsers.role === 'admin') esAdmin = true;
+
+                // Caso 3c: roleId apuntando a roles.name === 'admin'
+                if (!esAdmin && adminDesdeUsers.roleId) {
+                    try {
+                        const roleQuery = typeof adminDesdeUsers.roleId === 'string'
+                            ? (ObjectId.isValid(adminDesdeUsers.roleId) ? new ObjectId(adminDesdeUsers.roleId) : adminDesdeUsers.roleId)
+                            : adminDesdeUsers.roleId;
+                        const rol = await db.collection('roles').findOne({ _id: roleQuery });
+                        if (rol && rol.name === 'admin') {
+                            esAdmin = true;
+                        }
+                    } catch {}
+                }
+
+                if (esAdmin) {
+                    adminActual = adminDesdeUsers;
+                }
+            }
+        }
+
         if (!adminActual) {
             return res.status(404).json({
                 success: false,
@@ -56,12 +90,16 @@ const verificarAdmin = async (req, res, next) => {
             });
         }
 
-        // Verificar si es admin
-        if (!adminActual.isAdmin && adminActual.role !== 'admin') {
-            return res.status(403).json({
-                success: false,
-                message: 'Acceso denegado. Se requieren permisos de administrador'
-            });
+        // Verificar rol admin definitivo (para los casos 1 y 2)
+        if (adminActual === adminDesdeUsers) {
+            // ya validado como admin arriba
+        } else {
+            if (!adminActual.isAdmin && adminActual.role !== 'admin') {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Acceso denegado. Se requieren permisos de administrador'
+                });
+            }
         }
 
         req.usuarioAdmin = adminActual;

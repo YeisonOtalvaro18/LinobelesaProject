@@ -1,3 +1,4 @@
+Review.js
 const mongoose = require('mongoose');
 
 const reviewSchema = new mongoose.Schema({
@@ -15,16 +16,40 @@ const reviewSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  userAvatar: {
+    type: String,
+    default: ''
+  },
   rating: {
     type: Number,
     required: true,
     min: 1,
     max: 5
   },
+  title: {
+    type: String,
+    default: ''
+  },
   comment: {
     type: String,
     required: true,
     trim: true
+  },
+  verified: {
+    type: Boolean,
+    default: false
+  },
+  likes: {
+    type: Number,
+    default: 0
+  },
+  helpful: {
+    type: Number,
+    default: 0
+  },
+  images: {
+    type: [String],
+    default: []
   },
   createdAt: {
     type: Date,

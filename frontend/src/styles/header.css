@@ -33,13 +33,13 @@
 }
 
 .container {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: auto;
   padding: 0 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 110px;
+  height: 110px; /* ligeramente más compacto */
 }
 
 /* =========================================================
@@ -51,14 +51,15 @@
   gap: 15px;
   cursor: pointer;
   z-index: 1001;
+  margin-right: 60px;
 }
 
 .logo img {
-  height: 75px;
+  height: 72px;
 }
 
 .logo h1 {
-  font-size: 2.2rem;
+  font-size: 2.4rem;
   font-weight: bold;
   color: #6a0dad;
 }
@@ -68,7 +69,7 @@
    ========================================================= */
 .desktop-nav ul {
   display: flex;
-  gap: 50px;
+  gap: 60px;
   list-style: none;
 }
 
@@ -132,20 +133,18 @@
 .acciones {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   position: relative;
 }
 
 .icon-btn {
-  font-size: 1.4rem;
-  padding: 10px;
+  font-size: 1.5rem;
+  padding: 12px;
   border-radius: 50%;
   border: none;
   transition: 0.3s;
-  background: radial-gradient(circle,
-    rgba(167, 73, 235, 1) 0%,
-    rgba(189, 70, 183, 1) 100%);
-  color: white;
+  background: transparent;
+  color: #4a5568;
   position: relative;
 }
 
@@ -156,18 +155,54 @@
 
 .cart-badge {
   position: absolute;
-  top: -5px;
-  right: -5px;
+  top: -8px;
+  right: -8px;
   background: #ff4757;
   color: white;
   border-radius: 50%;
-  width: 20px;
+  min-width: 20px;
   height: 20px;
-  font-size: 0.7rem;
-  display: flex;
+  padding: 0 6px;
+  font-size: 0.75rem;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
+  font-weight: 700;
+}
+
+/* Desktop-specific actions container (buttons added in Header.jsx) */
+.acciones-desktop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cart-desktop-btn {
+  background: rgba(167, 73, 235, 0.08);
+  color: #6a0dad;
+  padding: 8px 10px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.perfil-desktop-btn, .login-desktop-btn {
+  background: rgba(167, 73, 235, 0.1);
+  color: #3b0f5a;
+  padding: 8px 12px;
+  border-radius: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+/* make sure icon-btn doesn't look like a pill on desktop */
+.acciones-desktop .icon-btn {
+  background: transparent;
+  padding: 6px;
+  border-radius: 8px;
 }
 
 .btn-login {
@@ -202,6 +237,12 @@
   font-size: 1.3rem;
   cursor: pointer;
   transition: all 0.3s ease;
+}
+/* Asegura que el botón hamburguesa se muestre solo en móvil */
+@media (max-width: 900px) {
+  .hamburger-btn {
+    display: block !important;
+  }
 }
 
 .hamburger-btn:hover {
@@ -267,15 +308,35 @@
   justify-content: center;
 }
 
-.mobile-nav ul li button:hover .nav-icon {
-  color: white;
-  transform: scale(1.1);
+@media (hover: hover) and (pointer: fine) {
+  .mobile-nav ul li button:hover .nav-icon {
+    color: #6a0dad;
+    transform: scale(1.06);
+  }
+
+  .mobile-nav ul li button:hover {
+    background: rgba(167, 73, 235, 0.08);
+    color: #4a5568;
+    padding-left: 40px;
+  }
 }
 
-.mobile-nav ul li button:hover {
-  background: #f8f4ff;
-  color: #6a0dad;
-  padding-left: 40px;
+.mobile-nav ul li button.active,
+.mobile-nav ul li button[aria-current="page"] {
+  background: rgba(167, 73, 235, 0.12);
+  color: #4a5568;
+  box-shadow: inset 4px 0 0 #a749eb;
+}
+
+.mobile-nav ul li button:focus {
+  outline: none;
+}
+
+.mobile-nav ul li button:focus-visible {
+  outline: 2px solid #a749eb;
+  outline-offset: 3px;
+  background: transparent;
+  box-shadow: none;
 }
 
 .mobile-menu-overlay {
@@ -401,268 +462,6 @@
 }
 
 /* =========================================================
-   ANIMACIONES
-   ========================================================= */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from { transform: translateY(40px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-/* =========================================================
-   ESTILO GLOBAL DE BOTONES
-   ========================================================= */
-button,
-.btn {
-  background: radial-gradient(circle,
-    rgba(167, 73, 235, 1) 0%,
-    rgba(189, 70, 183, 1) 100%);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-button:hover,
-.btn:hover {
-  opacity: 0.9;
-  transform: scale(1.02);
-}
-
-/* =========================================================
-   RESPONSIVE DESIGN
-   ========================================================= */
-
-/* Tablet */
-@media (max-width: 1024px) {
-  .container {
-    padding: 0 20px;
-  }
-
-  .desktop-nav ul {
-    gap: 30px;
-  }
-
-  .desktop-nav ul li button {
-    font-size: 1.1rem;
-  }
-
-  .logo h1 {
-    font-size: 2rem;
-  }
-
-  .logo img {
-    height: 65px;
-  }
-
-  .buscador input {
-    width: 250px;
-  }
-}
-
-/* Mobile */
-@media (max-width: 768px) {
-  .container {
-    padding: 0 15px;
-    height: 80px;
-  }
-
-  .main-header {
-    position: fixed;
-    width: 100%;
-  }
-
-  .logo img {
-    height: 50px;
-  }
-
-  .logo h1 {
-    font-size: 1.6rem;
-  }
-
-  /* Ocultar navegación desktop */
-  .desktop-nav {
-    display: none;
-  }
-
-  /* Mostrar botón hamburguesa */
-  .hamburger-btn {
-    display: block;
-  }
-
-  /* Ajustar acciones en mobile */
-  .acciones {
-    gap: 12px;
-  }
-
-  .btn-login {
-    padding: 10px 18px;
-    font-size: 0.9rem;
-  }
-
-  .btn-user {
-    padding: 10px 16px;
-    min-width: 150px;
-    font-size: 0.9rem;
-    justify-content: flex-start;
-  }
-
-  .header-user-name {
-    font-size: 0.85rem; /* Reducir tamaño pero mantener visible */
-    max-width: 80px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .admin-badge {
-    font-size: 0.6rem;
-    padding: 1px 6px;
-  }
-
-  .user-dropdown {
-    right: -10px;
-    min-width: 200px;
-  }
-
-  .icon-btn {
-    padding: 8px;
-    font-size: 1.2rem;
-  }
-
-  /* Ajustar menú mobile */
-  .mobile-menu {
-    top: 80px;
-    height: calc(100vh - 80px);
-    width: 100%;
-    right: -100%;
-  }
-
-  .mobile-menu-overlay {
-    top: 80px;
-    height: calc(100vh - 80px);
-  }
-
-  .mobile-nav ul li button {
-    padding: 18px 25px;
-    font-size: 1.1rem;
-  }
-
-  /* Ajustar buscador */
-  .buscador {
-    top: 90px;
-    right: 15px;
-    left: 15px;
-    width: auto;
-  }
-
-  .buscador input {
-    width: 100%;
-  }
-
-  /* Ajustar carrito modal */
-  .carrito-contenido {
-    width: 90%;
-    margin: 0 20px;
-  }
-}
-
-/* Mobile pequeño */
-@media (max-width: 480px) {
-  .container {
-    padding: 0 10px;
-    height: 70px;
-  }
-
-  .logo img {
-    height: 40px;
-  }
-
-  .logo h1 {
-    font-size: 1.4rem;
-  }
-
-  .acciones {
-    gap: 8px;
-  }
-
-  .btn-login {
-    padding: 8px 14px;
-    font-size: 0.85rem;
-  }
-
-  .btn-user {
-    padding: 8px 12px;
-    min-width: 100px; /* Espacio suficiente para ícono + nombre */
-    font-size: 0.85rem;
-  }
-
-  .btn-user .header-user-name {
-    max-width: 60px; /* Mostrar nombre truncado */
-    font-size: 0.8rem;
-  }
-  
-  .btn-user .admin-badge,
-  .btn-user .chevron {
-    display: none; /* Ocultar solo badge y chevron */
-  }
-
-  .user-dropdown {
-    right: -20px;
-    min-width: 180px;
-  }
-
-  .icon-btn {
-    padding: 6px;
-    font-size: 1.1rem;
-  }
-
-  .hamburger-btn {
-    padding: 8px;
-    font-size: 1.2rem;
-  }
-
-  .mobile-menu {
-    top: 70px;
-    height: calc(100vh - 70px);
-  }
-
-  .mobile-menu-overlay {
-    top: 70px;
-    height: calc(100vh - 70px);
-  }
-
-  .mobile-nav ul li button {
-    padding: 15px 20px;
-    font-size: 1rem;
-  }
-
-  .buscador {
-    top: 80px;
-    padding: 10px;
-  }
-
-  .buscador input {
-    padding: 10px 15px;
-    font-size: 1rem;
-  }
-
-  .scroll-to-top-btn {
-    right: 20px;
-    bottom: 20px;
-    width: 45px;
-    height: 45px;
-    font-size: 1.4rem;
-  }
-}
-
-/* =========================================================
    MENÚ DE USUARIO
    ========================================================= */
 .user-menu-container {
@@ -746,18 +545,19 @@ button:hover,
 }
 
 .user-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background: white;
+  position: fixed;
+  top: 110px;
+  right: 40px;
+  background: radial-gradient(circle, rgba(167, 73, 235, 1) 0%, rgba(189, 70, 183, 1) 100%);
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-  z-index: 1002;
+  z-index: 9999;
   min-width: 220px;
   padding: 8px 0;
-  margin-top: 8px;
-  border: 1px solid rgba(106, 13, 173, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   animation: dropdownSlide 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: none;
+  overflow-y: visible;
 }
 
 .user-dropdown button {
@@ -772,19 +572,19 @@ button:hover,
   gap: 12px;
   font-size: 0.95rem;
   font-weight: 600;
-  color: #4a5568;
+  color: white;
   transition: all 0.2s ease;
 }
 
 .user-dropdown button:hover {
-  background: linear-gradient(90deg, #f8f4ff, #f0e7ff);
-  color: #6a0dad;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
   transform: translateX(4px);
 }
 
 .user-dropdown .icon {
   font-size: 1.1rem;
-  color: #6a0dad;
+  color: white;
   min-width: 18px;
   display: flex;
   align-items: center;
@@ -801,103 +601,6 @@ button:hover,
   margin: 8px 16px;
 }
 
-/* Sección de usuario móvil */
-.mobile-user-section {
-  border-top: 2px solid #f0f0f0;
-  margin-top: 20px;
-  padding-top: 20px;
-}
-
-.mobile-cart-btn {
-  width: 100%;
-  background: radial-gradient(circle,
-    rgba(167, 73, 235, 1) 0%,
-    rgba(189, 70, 183, 1) 100%);
-  color: white;
-  border: none;
-  padding: 16px 20px;
-  margin-bottom: 15px;
-  border-radius: 12px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  transition: 0.3s;
-}
-
-.mobile-cart-btn:hover {
-  opacity: 0.9;
-  transform: scale(1.02);
-}
-
-.mobile-user-menu {
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 15px;
-}
-
-.user-welcome {
-  color: #6a0dad;
-  font-weight: 700;
-  font-size: 1.1rem;
-  margin-bottom: 12px;
-  text-align: center;
-}
-
-.mobile-user-menu button {
-  width: 100%;
-  background: white;
-  border: 1px solid #e2e8f0;
-  color: #4a5568;
-  padding: 14px;
-  margin-bottom: 8px;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.mobile-user-menu button:hover {
-  background: #6a0dad;
-  color: white;
-  transform: translateY(-1px);
-}
-
-.mobile-user-menu button:last-child {
-  background: #ff4757;
-  color: white;
-  border-color: #ff4757;
-  margin-bottom: 0;
-}
-
-.mobile-user-menu button:last-child:hover {
-  background: #ff3838;
-}
-
-.mobile-login-btn {
-  width: 100%;
-  background: radial-gradient(circle,
-    rgba(167, 73, 235, 1) 0%,
-    rgba(189, 70, 183, 1) 100%);
-  color: white;
-  border: none;
-  padding: 16px;
-  border-radius: 12px;
-  font-size: 1.1rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  transition: 0.3s;
-}
-
-.mobile-login-btn:hover {
-  opacity: 0.9;
-  transform: scale(1.02);
-}
-
-/* Animaciones */
 @keyframes dropdownSlide {
   from {
     opacity: 0;

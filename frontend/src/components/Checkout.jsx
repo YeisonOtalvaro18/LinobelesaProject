@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../styles/checkout.css";
 import { validateCheckoutForm, inputFilters } from "../utils/validations";
+import { formatPrice } from '../utils/formatPrice';
 
 // Props:
 // - cart: array de productos { _id, name, price, qty, images }
@@ -8,153 +9,94 @@ import { validateCheckoutForm, inputFilters } from "../utils/validations";
 // - clearCart(): optional callback para limpiar el carrito
 // - user: datos del usuario logueado
 export default function Checkout({ cart = [], onSubmit, clearCart, user }) {
-  const [localCart, setLocalCart] = useState([]);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [address, setAddress] = useState("");
-  const [addressDesc, setAddressDesc] = useState("");
-  const [idType, setIdType] = useState("Cédula de ciudadanía");
-  const [idNumber, setIdNumber] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("Efectivo");
-  const [coupon, setCoupon] = useState("");
-  const [couponDiscount, setCouponDiscount] = useState(0);
   const [sending, setSending] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("Efectivo");
+  const [idNumber, setIdNumber] = useState("");
+  const [idType, setIdType] = useState("Cédula de ciudadanía");
+  const [addressDesc, setAddressDesc] = useState("");
+  const [address, setAddress] = useState("");
+  const [departamento, setDepartamento] = useState("");
+  const [municipio, setMunicipio] = useState("");
+  const [lastName, setLastName] = useState("");
   const [errors, setErrors] = useState({});
+  const [firstName, setFirstName] = useState("");
   const [loading, setLoading] = useState(false);
-
+  // Aplica el cupón ingresado y actualiza el descuento
+  const applyCoupon = () => {
+    const code = coupon.trim().toUpperCase();
+    if (!code) {
+      setCouponDiscount(0);
+      alert("Ingresa un cupón válido");
+      return;
+    }
+    // Simulación de cupones válidos
+    if (code === "LINO10" || code === "DISCOUNT10") {
+      setCouponDiscount(0.1);
+      alert("Cupón aplicado: 10% de descuento");
+    } else if (code === "SUMMER15") {
+      setCouponDiscount(0.15);
+      alert("Cupón aplicado: 15% de descuento");
+    } else {
+      setCouponDiscount(0);
+      alert("Cupón no válido");
+    }
+  };
+  const [coupon, setCoupon] = useState("");
+  const [localCart, setLocalCart] = useState([]);
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  // Calcular subtotal, descuento y total
+  const subtotal = localCart.reduce((sum, item) => sum + (item.price * (item.qty || 1)), 0);
+  const discount = Math.round(subtotal * (couponDiscount || 0));
+  const total = subtotal - discount;
   useEffect(() => {
-    // inicializar copia local del carrito (para editar cantidades sin tocar global)
-    setLocalCart(cart.map((p) => ({ ...p, qty: p.qty || 1 })));
-  }, [cart]);
-
-  // Cargar datos del usuario al montar el componente
-  useEffect(() => {
-    // COMENTADO TEMPORALMENTE - La ruta /api/users/profile no existe
-    /*
-    const loadUserData = async () => {
-      if (user?.email) {
+    const fetchUserProfile = async () => {
+      if (user?.id) {
         setLoading(true);
         try {
           const token = localStorage.getItem("token");
-          const response = await fetch(
-            `${import.meta.env.VITE_API_URL}/api/users/profile`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/${user.id}`, {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
             }
-          );
-
-          if (response.ok) {
-            const userData = await response.json();
-            // Pre-llenar formulario con datos del usuario
-            setFirstName(userData.nombre || userData.firstName || "");
-            setLastName(userData.apellido || userData.lastName || "");
-            setAddress(userData.direccion || userData.address || "");
-            setAddressDesc(userData.descripcionDireccion || userData.addressDesc || "");
-            setIdType(userData.tipoDocumento || userData.idType || "Cédula de ciudadanía");
-            setIdNumber(userData.numeroDocumento || userData.idNumber || "");
-          }
-        } catch (error) {
-          console.error("Error loading user data:", error);
-          // Si no se pueden cargar los datos del servidor, usar los datos básicos del user
-          if (user) {
+          });
+          const data = await response.json();
+          if (data && (data.success === undefined || data.success === true)) {
+            // El endpoint devuelve directamente los datos del usuario
+            setFirstName(data.nombre || data.firstName || data.profile?.firstName || "");
+            setLastName(data.apellidos || data.lastName || data.profile?.lastName || "");
+            setAddress(data.address || data.direccion || data.profile?.address || "");
+            setAddressDesc(data.addressDesc || data.descripcionDireccion || data.profile?.addressDesc || "");
+            setMunicipio(data.municipio || data.profile?.municipio || data.city || "");
+            setDepartamento(data.departamento || data.profile?.departamento || data.state || "");
+            setIdType(data.tipoDocumento || data.idType || data.profile?.idType || "Cédula de ciudadanía");
+            setIdNumber(data.numeroDocumento || data.idNumber || data.profile?.idNumber || "");
+          } else if (user) {
             setFirstName(user.nombre || user.firstName || "");
             setLastName(user.apellido || user.lastName || "");
+            setAddress(user.direccion || user.address || "");
+            setAddressDesc(user.descripcionDireccion || user.addressDesc || "");
+            setMunicipio(user.municipio || user.city || "");
+            setDepartamento(user.departamento || user.state || "");
+            setIdType(user.tipoDocumento || user.idType || "Cédula de ciudadanía");
             setIdNumber(user.numeroDocumento || user.idNumber || "");
           }
+        } catch (error) {
+          console.error("Error cargando datos de usuario:", error);
         } finally {
           setLoading(false);
         }
       }
     };
-
-    loadUserData();
-    */
-    
-    // Funcionalidad simplificada: usar datos básicos del usuario si están disponibles
-    if (user) {
-      setFirstName(user.nombre || user.firstName || "");
-      setLastName(user.apellido || user.lastName || "");
-      setIdNumber(user.numeroDocumento || user.idNumber || "");
-    }
+    fetchUserProfile();
   }, [user]);
-
   const changeQty = (id, qty) => {
-    if (qty < 1) qty = 1;
-    setLocalCart((c) => c.map((it) => (it._id === id ? { ...it, qty } : it)));
-  };
-
-  // Función para validar todos los campos del formulario usando validaciones externas
-  const validateForm = () => {
-    const formData = {
-      firstName,
-      lastName,
-      address,
-      addressDesc,
-      idNumber,
-      idType,
-      cart: localCart
-    };
-
-    const validation = validateCheckoutForm(formData);
-    setErrors(validation.errors);
-    return validation.isValid;
-  };
-
-  const subtotal = localCart.reduce(
-    (acc, it) => acc + (Number(it.price) || 0) * (it.qty || 1),
-    0
-  );
-  const discount = subtotal * couponDiscount;
-  const total = subtotal - discount;
-
-  const applyCoupon = () => {
-    const code = (coupon || "").trim().toUpperCase();
-    if (!code) {
-      setCouponDiscount(0);
-      alert("Ingrese un código de cupón");
-      return;
-    }
-
-    // Intentar validar en backend; si falla, usar reglas locales como fallback
-    (async () => {
-      try {
-        const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/coupons/validate`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ code }),
-          }
-        );
-        const data = await res.json();
-        if (res.ok && data.success && data.valid) {
-          const discountRate = Number(data.coupon.discount) || 0;
-          setCouponDiscount(discountRate);
-          alert(
-            `Cupón aplicado: ${Math.round(discountRate * 100)}% de descuento`
-          );
-          return;
-        }
-        // Si no es válido según el backend, fallback a reglas locales
-      } catch (err) {
-        console.error("Error validando cupón en backend:", err);
-      }
-
-      // Reglas sencillas locales como respaldo
-      if (code === "LINO10" || code === "DISCOUNT10") {
-        setCouponDiscount(0.1);
-        alert("Cupón aplicado: 10% de descuento");
-      } else if (code === "SUMMER15") {
-        setCouponDiscount(0.15);
-        alert("Cupón aplicado: 15% de descuento");
-      } else {
-        setCouponDiscount(0);
-        alert("Cupón no válido");
-      }
-    })();
+    setLocalCart((prev) =>
+      prev.map((item) =>
+        item._id === id ? { ...item, qty: Math.max(1, qty) } : item
+      )
+    );
   };
 
   const handleSubmit = async (e) => {
@@ -168,7 +110,7 @@ export default function Checkout({ cart = [], onSubmit, clearCart, user }) {
     }
 
     const order = {
-      customer: { firstName, lastName, address, addressDesc, idType, idNumber },
+      customer: { firstName, lastName, address, addressDesc, municipio, departamento, idType, idNumber },
       paymentMethod,
       coupon: coupon || null,
       items: localCart.map((it) => ({
@@ -278,11 +220,13 @@ export default function Checkout({ cart = [], onSubmit, clearCart, user }) {
             <ul>
               {localCart.map((it) => (
                 <li key={it._id} className="checkout-item">
-                  <img src={it.images?.[0] || it.image || ""} alt={it.name} />
+                  {(it.images?.[0] || it.image) ? (
+                    <img src={it.images?.[0] || it.image} alt={it.name} />
+                  ) : null}
                   <div className="checkout-item-info">
                     <strong>{it.name}</strong>
-                    <span className="small">
-                      ${Number(it.price).toLocaleString("es-CO")}
+                      <span className="small">
+                      ${formatPrice(it.price)}
                     </span>
                     <div className="qty">
                       <label>Cantidad</label>
@@ -302,11 +246,11 @@ export default function Checkout({ cart = [], onSubmit, clearCart, user }) {
           )}
 
           <div className="summary">
-            <div>Subtotal: ${subtotal.toLocaleString("es-CO")}</div>
+            <div>Subtotal: ${formatPrice(subtotal)}</div>
             {discount > 0 && (
-              <div>Descuento: -${discount.toLocaleString("es-CO")}</div>
+              <div>Descuento: -${formatPrice(discount)}</div>
             )}
-            <div className="total">Total: ${total.toLocaleString("es-CO")}</div>
+            <div className="total">Total: ${formatPrice(total)}</div>
           </div>
 
           <div className="coupon">
@@ -342,7 +286,6 @@ export default function Checkout({ cart = [], onSubmit, clearCart, user }) {
               />
               {errors.firstName && <span className="error-message">{errors.firstName}</span>}
             </div>
-            
             <div className="input-group">
               <input
                 placeholder="Apellido"
@@ -358,6 +301,24 @@ export default function Checkout({ cart = [], onSubmit, clearCart, user }) {
                 required
               />
               {errors.lastName && <span className="error-message">{errors.lastName}</span>}
+            </div>
+          </div>
+          <div className="row">
+            <div className="input-group">
+              <input
+                placeholder="Municipio"
+                value={municipio}
+                onChange={e => setMunicipio(e.target.value)}
+                required
+              />
+            </div>
+            <div className="input-group">
+              <input
+                placeholder="Departamento"
+                value={departamento}
+                onChange={e => setDepartamento(e.target.value)}
+                required
+              />
             </div>
           </div>
           
@@ -470,7 +431,7 @@ export default function Checkout({ cart = [], onSubmit, clearCart, user }) {
           >
             {sending
               ? "Enviando..."
-              : `Enviar pedido - Total: $${total.toLocaleString("es-CO")}`}
+              : `Enviar pedido - Total: $${formatPrice(total)}`}
           </button>
         </form>
       </div>

@@ -27,6 +27,14 @@ const userSchema = new mongoose.Schema({
             type: String,
             default: ""
         },
+        municipio: {
+            type: String,
+            default: ""
+        },
+        departamento: {
+            type: String,
+            default: ""
+        },
         firstName: {
             type: String,
             required: true

@@ -1,5 +1,14 @@
 /* Removed Tailwind directives due to unknown at-rule error */
 
+* {
+  box-sizing: border-box;
+}
+
+html {
+  overflow-x: hidden;
+  width: 100%;
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -26,10 +35,26 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
+  padding: 0;
   min-width: 320px;
   min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* Asegurar que el footer siempre ocupe el 100% del ancho */
+footer {
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
 }
 
 h1 {

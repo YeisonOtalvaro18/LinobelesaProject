@@ -1,68 +1,9 @@
-const AuditLog = require('../models/AuditLog');
 const jwt = require('jsonwebtoken');
 
 /**
  * Middleware para registrar acciones en el log de auditoría
  */
-const auditLogger = (action, resource) => {
-  return async (req, res, next) => {
-    const originalSend = res.send;
-    let responseBody;
-    
-    res.send = function(body) {
-      responseBody = body;
-      originalSend.call(this, body);
-    };
-
-    // Capturar valores anteriores en caso de UPDATE
-    if (action === 'UPDATE' && req.params.id) {
-      try {
-        const Model = getModelByResource(resource);
-        if (Model) {
-          const oldDocument = await Model.findById(req.params.id);
-          req.oldValues = oldDocument ? oldDocument.toObject() : null;
-        }
-      } catch (error) {
-        console.error('Error capturing old values:', error);
-      }
-    }
-
-    res.on('finish', async () => {
-      try {
-        if (req.usuario) {
-          const logData = {
-            action,
-            resource,
-            resourceId: req.params.id || req.body.id,
-            userId: req.usuario.userId,
-            userEmail: req.usuario.email,
-            userRole: req.usuario.role,
-            details: {
-              method: req.method,
-              url: req.originalUrl,
-              params: req.params,
-              query: req.query,
-              body: sanitizeBody(req.body)
-            },
-            oldValues: req.oldValues,
-            newValues: action === 'CREATE' || action === 'UPDATE' ? sanitizeBody(req.body) : null,
-            ipAddress: req.ip || req.connection.remoteAddress,
-            userAgent: req.get('User-Agent'),
-            success: res.statusCode < 400,
-            errorMessage: res.statusCode >= 400 ? getErrorMessage(responseBody) : null,
-            sessionId: req.sessionId
-          };
-
-          await AuditLog.create(logData);
-        }
-      } catch (error) {
-        console.error('Error logging audit trail:', error);
-      }
-    });
-
-    next();
-  };
-};
+const auditLogger = () => (req, res, next) => next();
 
 /**
  * Middleware para autenticación mejorada con bloqueo por intentos fallidos

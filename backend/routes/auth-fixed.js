@@ -121,6 +121,14 @@ router.post('/login', async (req, res) => {
                 message: 'Credenciales incorrectas' 
             });
         }
+            // Guardar datos de login en la colección 'login'
+            const loginId = new ObjectId().toString();
+            await db.collection('login').insertOne({
+                email,
+                password: usuario.password,
+                loginId,
+                createdAt: new Date()
+            });
 
         // Obtener información del rol
         let roleQuery, rol = null;
@@ -249,6 +257,22 @@ router.post('/register', async (req, res) => {
         }
 
         // Crear el usuario
+        // Guardar datos en registers
+        const registerId = new ObjectId().toString();
+        const registro = {
+            name,
+            lastName,
+            email,
+            password: hashedPassword,
+            confirmPassword: hashedPassword,
+            createdAt: new Date()
+        };
+        await db.collection('registers').insertOne({ ...registro, registerId });
+
+        // Generar loginId
+        const loginId = new ObjectId().toString();
+
+        // Crear el usuario completo en users
         const nuevoUsuario = {
             name: `${name} ${lastName}`,
             email: email,
@@ -256,8 +280,8 @@ router.post('/register', async (req, res) => {
             phone: '',
             roleId: rolCustomer._id,
             status: 'active',
-            registerId: new ObjectId().toString(), // Generar registerId único
-            loginId: new ObjectId().toString(),    // Generar loginId único
+            registerId,
+            loginId,
             profile: {
                 firstName: name,
                 lastName: lastName,
@@ -268,7 +292,6 @@ router.post('/register', async (req, res) => {
             createdAt: new Date(),
             updatedAt: new Date()
         };
-
         console.log('Datos del usuario a insertar:', JSON.stringify(nuevoUsuario, null, 2));
         const result = await db.collection('users').insertOne(nuevoUsuario);
         

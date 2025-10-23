@@ -65,7 +65,7 @@ export default function ContactForm() {
           <div className="contact-map">
             <div style={{ position: 'relative' }}>
               <iframe
-                src="https://www.openstreetmap.org/export/embed.html?bbox=-75.3803178%2C6.1651623%2C-75.3723178%2C6.1691623&amp;layer=mapnik&amp;marker=6.1671623%2C-75.3763178"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.0877515828477!2d-75.37851658521634!3d6.167122995504283!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e469fa601c90a23%3A0xcbec4b2b274acaac!2sCl.%2067%20%2354-297%2C%20Rionegro%2C%20Antioquia!5e0!3m2!1ses!2sco!4v1234567890123!5m2!1ses!2sco"
                 width="100%"
                 height="220"
                 style={{ 
@@ -75,7 +75,8 @@ export default function ContactForm() {
                 }}
                 allowFullScreen=""
                 loading="lazy"
-                title="Ubicación Linobelesa - OpenStreetMap"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Ubicación Linobelesa - Google Maps"
               />
               
               {/* Overlay con información y enlaces */}
@@ -100,7 +101,7 @@ export default function ContactForm() {
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <a 
-                    href="https://maps.google.com/?q=6.1671623,-75.3763178" 
+                    href="https://www.google.com/maps/place/Cl.+67+%2354-297,+Rionegro,+Antioquia/@6.1671623,-75.3763178,17z" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     style={{ 
@@ -112,7 +113,7 @@ export default function ContactForm() {
                       fontSize: '11px'
                     }}
                   >
-                    Google Maps
+                    Ver en Google Maps
                   </a>
                   <a 
                     href="https://waze.com/ul?q=Cl.%2067%20%2354-297%2C%20Rionegro%2C%20Antioquia" 

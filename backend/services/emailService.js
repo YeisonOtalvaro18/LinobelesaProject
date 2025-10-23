@@ -301,6 +301,59 @@ class EmailService {
             return { success: false, error: error.message };
         }
     }
+
+    static async sendActivationEmail(email, activationToken, userName) {
+        try {
+            const activationUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/activate?token=${activationToken}`;
+            const request = mailjetClient
+                .post("send", { 'version': 'v3.1' })
+                .request({
+                    'Messages': [
+                        {
+                            'From': {
+                                'Email': process.env.FROM_EMAIL || 'infolinobelesa@gmail.com',
+                                'Name': process.env.FROM_NAME || 'Linobelesa'
+                            },
+                            'To': [
+                                {
+                                    'Email': email,
+                                    'Name': userName || 'Usuario'
+                                }
+                            ],
+                            'Subject': '🔑 Activa tu cuenta - Linobelesa',
+                            'HTMLPart': `
+                                <html>
+                                <head><meta charset='UTF-8'></head>
+                                <body style='font-family: Arial, sans-serif; background: #f8f9fa;'>
+                                    <div style='max-width:600px;margin:auto;background:#fff;padding:30px;border-radius:16px;box-shadow:0 0 10px #a749eb22;'>
+                                        <div style='background:linear-gradient(135deg,#a749eb 0%,#bd46b7 100%);color:white;padding:24px 0;border-radius:12px 12px 0 0;text-align:center;'>
+                                            <h1>Bienvenido a Linobelesa</h1>
+                                        </div>
+                                        <p>Hola <b>${userName || 'Usuario'}</b>,</p>
+                                        <p>Gracias por registrarte. Para activar tu cuenta, haz clic en el siguiente botón:</p>
+                                        <div style='text-align:center;margin:24px 0;'>
+                                            <a href='${activationUrl}' style='background:linear-gradient(135deg,#a749eb 0%,#bd46b7 100%);color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:bold;'>Activar Cuenta</a>
+                                        </div>
+                                        <p>Si el botón no funciona, copia y pega este enlace en tu navegador:</p>
+                                        <p style='word-break:break-all;color:#a749eb;'>${activationUrl}</p>
+                                        <hr style='margin:32px 0;border:none;border-top:1px solid #eee;'>
+                                        <p style='font-size:12px;color:#666;'>Este correo fue enviado automáticamente. Si tienes dudas, contacta con soporte.</p>
+                                    </div>
+                                </body>
+                                </html>
+                            `,
+                            'TextPart': `Hola ${userName || 'Usuario'},\n\nActiva tu cuenta en Linobelesa usando este enlace: ${activationUrl}`
+                        }
+                    ]
+                });
+            const result = await request;
+            console.log('✅ Email de activación enviado:', result.body);
+            return { success: true, messageId: result.body.Messages[0].Status };
+        } catch (error) {
+            console.error('❌ Error enviando email de activación:', error);
+            throw new Error('Error al enviar el email de activación');
+        }
+    }
 }
 
 module.exports = EmailService;

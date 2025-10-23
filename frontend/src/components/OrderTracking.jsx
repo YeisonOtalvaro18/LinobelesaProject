@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "../styles/orderTracking.css";
+import { formatPrice } from '../utils/formatPrice';
 
 // Props:
 // - orders: optional array de pedidos
@@ -115,7 +116,7 @@ export default function OrderTracking({ orders: propOrders }) {
                       <div className="name">{it.name}</div>
                       <div className="meta">
                         Cantidad: {it.qty} • $
-                        {Number(it.price).toLocaleString("es-CO")}
+                        {formatPrice(it.price)}
                       </div>
                     </div>
                   </li>
@@ -125,7 +126,7 @@ export default function OrderTracking({ orders: propOrders }) {
             <div className="order-footer">
               <div>
                 Total pagado:{" "}
-                <strong>${Number(o.total).toLocaleString("es-CO")}</strong>
+                <strong>${formatPrice(o.total)}</strong>
               </div>
             </div>
           </article>

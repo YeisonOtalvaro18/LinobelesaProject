@@ -5,6 +5,7 @@ import {
   FaArrowLeft
 } from 'react-icons/fa';
 import '../../styles/Analytics.css';
+import { formatPrice } from '../../utils/formatPrice';
 
 const Analytics = ({ onNavigate }) => {
   const [analytics, setAnalytics] = useState(null);
@@ -180,7 +181,7 @@ const Analytics = ({ onNavigate }) => {
                 <FaChartLine />
               </div>
               <div className="metric-data">
-                <h3>${analytics.summary.totalRevenue.toLocaleString()}</h3>
+                <h3>${formatPrice(analytics.summary.totalRevenue)}</h3>
                 <p>Ingresos</p>
                 {getGrowthIndicator(8.3)}
               </div>
@@ -283,7 +284,7 @@ const Analytics = ({ onNavigate }) => {
               </div>
               <div className="insight-card">
                 <h4>Ticket Promedio</h4>
-                <p>${analytics.summary.averageOrderValue} por pedido</p>
+                <p>${formatPrice(analytics.summary.averageOrderValue)} por pedido</p>
               </div>
               <div className="insight-card">
                 <h4>Crecimiento</h4>

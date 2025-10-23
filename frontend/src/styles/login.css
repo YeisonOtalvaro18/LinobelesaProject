@@ -39,10 +39,11 @@
   .auth-container {
     flex-direction: column;
     min-height: unset;
-    max-width: 99vw;
+    max-width: 100%;
+    box-sizing: border-box;
     box-shadow: none;
     border-radius: var(--border-radius);
-    width: 100vw;
+    width: 100%;
     padding: 0;
   }
   .brand-section {
@@ -64,14 +65,15 @@
   }
   .register-form,
   .login-form {
-    max-width: 99vw;
+    max-width: 100%;
+    box-sizing: border-box;
     padding: 18px 8px;
     box-shadow: none;
     border-radius: 0;
   }
   .auth-button {
-    font-size: 0.9rem;
-    padding: 9px 0;
+    font-size: 1.2rem; /* Incrementado para mejor visibilidad */
+    padding: 14px 0; /* Aumentado para mayor área de clic */
   }
   .password-rules {
     font-size: 12px;
@@ -91,10 +93,18 @@
 body {
   background: #f5f5f5;
   min-height: 100vh;
+  display: block; /* Cambiado de flex a block para evitar interferencias globales */
+  padding: 20px 0;
+}
+
+/* === Centrado perfecto del login sin afectar nada más === */
+.auth-container {
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px 0;
+  position: relative; /* Añadido para evitar superposición */
+  z-index: 1; /* Asegurar que no interfiera con el header */
 }
 
 /* =========================
@@ -102,15 +112,18 @@ body {
 ========================= */
 .auth-container {
   display: flex;
-  max-width: 720px;         /* ancho máximo en escritorio */
-  width: 95vw;              /* ocupa casi todo en pantallas pequeñas */
-  border-radius: 18px;
+  max-width: 900px;         
+  width: 95vw;              
+  border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(80, 0, 120, 0.15),
-              0 1.5px 8px rgba(80, 0, 120, 0.08);
+  box-shadow: 0 20px 60px rgba(167, 73, 235, 0.15),
+              0 8px 32px rgba(167, 73, 235, 0.1),
+              0 2px 8px rgba(167, 73, 235, 0.05);
   align-items: stretch;
   background: #fff;
-  min-height: 460px;
+  min-height: 520px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* =========================
@@ -118,23 +131,48 @@ body {
 ========================= */
 .brand-section {
   flex: 1.2;
-  background: linear-gradient(135deg, #a749eb 0%, #bd46b7 100%);
+  background: linear-gradient(135deg, #6a0dad 0%, #bd46b7 50%, #ff69b4 100%);
   color: #fff;
-  padding: 32px 16px;
+  padding: 40px 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.brand-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="80" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="60" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="70" cy="30" r="1.5" fill="rgba(255,255,255,0.1)"/></svg>');
+  animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
 }
 
 .brand-image {
-  max-width: 180px;  /* un poco más grande */
+  max-width: 200px;
   width: 100%;
-  margin-bottom: 14px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  background: #fff;
-  padding: 6px;
+  margin-bottom: 20px;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  background: rgba(255, 255, 255, 0.95);
+  padding: 12px;
+  z-index: 2;
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.brand-image:hover {
+  transform: translateY(-5px) scale(1.02);
 }
 
 /* =========================
@@ -142,11 +180,13 @@ body {
 ========================= */
 .forms-section {
   flex: 1.5;
-  padding: 20px;
+  padding: 40px 30px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
+  background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+  position: relative;
 }
 @media (max-width: 700px) {
   .forms-section {
@@ -164,28 +204,49 @@ body {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 360px;
-  background: #faf7fd;
-  border-radius: 14px;
-  box-shadow: 0 2px 12px rgba(167, 73, 235, 0.08);
-  padding: 26px 20px;
-  gap: 10px;
-  animation: fade-in 0.3s ease;
+  max-width: 400px;
+  background: linear-gradient(135deg, #ffffff 0%, #fefeff 100%);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(167, 73, 235, 0.1),
+              0 4px 16px rgba(167, 73, 235, 0.05),
+              inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  padding: 32px 28px;
+  gap: 16px;
+  animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(167, 73, 235, 0.1);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Titulares y subtítulos */
 .register-form h2,
 .login-form h2 {
-  font-size: 1.8rem;
-  color: #a749eb;
-  margin-bottom: 6px;
+  font-size: 2rem;
+  background: linear-gradient(135deg, #6a0dad 0%, #bd46b7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+  font-weight: 700;
+  text-align: center;
 }
 
 .register-form p,
 .login-form p {
-  font-size: 0.95rem;
-  color: #7a5a8c;
-  margin-bottom: 14px;
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 20px;
+  text-align: center;
+  line-height: 1.5;
 }
 
 /* =========================
@@ -193,12 +254,14 @@ body {
 ========================= */
 .register-form input,
 .login-form input {
+  width: 100%;
   padding: 12px 14px;
   border: 1.5px solid #e2d6f7;
   border-radius: 8px;
   font-size: 1rem;
   background: #fff;
   transition: border 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
 }
 
 .register-form input:focus,
@@ -215,11 +278,13 @@ body {
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 .password-wrapper input {
   flex: 1;
-  padding-right: 40px; /* espacio para el ojito */
+  width: 100%;
+  padding-right: 40px;
 }
 
 /* Botón del ojito */
@@ -265,7 +330,7 @@ body {
   border-radius: 8px;
   margin: 12px 0;
   font-size: 14px;
-  max-width: 100%; /* no desborda */
+  max-width: 100%;
 }
 
 .password-rules p {
@@ -309,12 +374,12 @@ body {
    10. BOTONES
 ========================= */
 .auth-button {
-  padding: 10px 0;   /* antes 13px → más compacto */
+  padding: 10px 0;
   background: linear-gradient(90deg, #a749eb 0%, #bd46b7 100%);
   color: #fff;
   border: none;
   border-radius: 8px;
-  font-size: 0.95rem;   /* antes 1.05rem → más pequeño */
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.25s;
@@ -325,6 +390,16 @@ body {
 .auth-button:hover {
   transform: scale(1.02);
   opacity: 0.95;
+}
+
+/* Ajuste adicional para botones en diseño responsivo */
+@media (max-width: 700px) {
+  .auth-button {
+    font-size: 1.1rem; /* Tamaño moderado para mejor visibilidad */
+    padding: 12px 0; /* Área de clic adecuada */
+    width: 100%; /* Asegurar que el botón ocupe el ancho completo */
+    max-width: 300px; /* Limitar el ancho máximo para evitar excesos */
+  }
 }
 
 /* =========================
@@ -356,7 +431,7 @@ body {
    12. SWITCH (login <-> registro)
 ========================= */
 .auth-switch {
-  margin-top: 10px;   /* espacio controlado debajo del botón */
+  margin-top: 10px;
   text-align: center;
   font-size: 14px;
   color: #a749eb;

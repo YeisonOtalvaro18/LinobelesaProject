@@ -40,7 +40,8 @@
     padding: 24px 10px;
     border-radius: 16px;
     box-shadow: 0 0 12px rgba(140, 16, 242, 0.13);
-    max-width: 99vw;
+    max-width: 100%;
+    box-sizing: border-box;
     margin-bottom: 24px;
   }
   .formu h2 {
@@ -80,7 +81,8 @@
     padding: 18px 6px;
     border-radius: 12px;
     box-shadow: 0 0 8px rgba(140, 16, 242, 0.1);
-    max-width: 99vw;
+    max-width: 100%;
+    box-sizing: border-box;
     margin-bottom: 18px;
   }
   .formu h2 {
@@ -258,6 +260,8 @@
   margin-bottom: 20px;
   font-size: 1rem;
   transition: border-color 0.3s;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .formu input:focus,

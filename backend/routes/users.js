@@ -80,111 +80,116 @@ router.get('/', verificarToken, verificarAdmin, async (req, res) => {
     }
 });
 
-// Ruta para crear nuevo usuario (admin)
-router.post('/', verificarToken, verificarAdmin, async (req, res) => {
+// Ruta para obtener usuario por ID para el propio usuario (sin requerir admin)
+// Si el id solicitado coincide con el del token, permite el acceso; en otro caso pasa al siguiente handler (admin)
+router.get('/:id', verificarToken, async (req, res, next) => {
     try {
-        const { nombre, apellidos, email, telefono, rol, activo, password } = req.body;
+        const { id } = req.params;
+        const tokenUserId = req.usuario?.userId?.toString();
+
+        if (tokenUserId !== id) {
+            return next(); // No es el propio usuario, continuar al handler que requiere admin
+        }
+
         const db = await connectDB();
         if (!db) {
-            return res.status(500).json({
-                success: false,
-                message: 'Error de conexión a la base de datos'
-            });
+            return res.status(500).json({ success: false, message: 'Error de conexión a la base de datos' });
         }
 
-        // Validar campos requeridos
-        if (!nombre || !email || !password) {
-            return res.status(400).json({
-                success: false,
-                message: 'Nombre, email y contraseña son campos obligatorios'
-            });
+        const orQueries = [];
+        if (ObjectId.isValid(id)) {
+            orQueries.push({ _id: new ObjectId(id) });
+        }
+        orQueries.push({ _id: id });
+        orQueries.push({ registerId: id });
+        orQueries.push({ loginId: id });
+
+        const usuario = await db.collection('users').findOne({ $or: orQueries });
+        if (!usuario) {
+            return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
         }
 
-        // Verificar si el email ya existe
-        const emailExistente = await db.collection('users').findOne({ email });
-        if (emailExistente) {
-            return res.status(409).json({
-                success: false,
-                message: 'El email ya está registrado'
-            });
-        }
-
-        // Encriptar contraseña
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Preparar datos del usuario
-        const nuevoUsuario = {
-            firstName: nombre,
-            lastName: apellidos || '',
-            name: `${nombre} ${apellidos || ''}`.trim(),
-            email,
-            phone: telefono || '',
-            password: hashedPassword,
-            status: activo !== false ? 'active' : 'inactive',
-            createdAt: new Date(),
-            updatedAt: new Date()
-        };
-
-        // Si se especifica un rol, obtener roleId
-        if (rol && rol !== 'Cliente') {
-            const rolDoc = await db.collection('roles').findOne({ displayName: rol });
-            if (rolDoc) {
-                nuevoUsuario.roleId = rolDoc._id.toString();
-            }
-        }
-
-        // Insertar usuario
-        const resultado = await db.collection('users').insertOne(nuevoUsuario);
-
-        // Obtener rol para la respuesta
-        let rolRespuesta = null;
-        if (nuevoUsuario.roleId) {
-            rolRespuesta = await db.collection('roles').findOne({ 
-                _id: new ObjectId(nuevoUsuario.roleId) 
-            });
+        // Obtener rol si existe
+        let rol = null;
+        if (usuario.roleId) {
+            try {
+                const roleQuery = typeof usuario.roleId === 'string' ? new ObjectId(usuario.roleId) : usuario.roleId;
+                rol = await db.collection('roles').findOne({ _id: roleQuery });
+            } catch {}
         }
 
         const respuesta = {
-            id: resultado.insertedId.toString(),
-            nombre: nuevoUsuario.firstName,
-            apellidos: nuevoUsuario.lastName,
-            email: nuevoUsuario.email,
-            telefono: nuevoUsuario.phone,
-            rol: rolRespuesta ? rolRespuesta.displayName : 'Cliente',
-            activo: nuevoUsuario.status !== 'inactive',
-            fechaRegistro: nuevoUsuario.createdAt
+            id: usuario._id.toString(),
+            nombre: usuario.firstName || usuario.name?.split(' ')[0] || '',
+            apellidos: usuario.lastName || usuario.name?.split(' ').slice(1).join(' ') || '',
+            email: usuario.email,
+            telefono: usuario.phone || '',
+            municipio: usuario.profile?.municipio || usuario.municipio || '',
+            departamento: usuario.profile?.departamento || usuario.departamento || '',
+            rol: rol ? rol.displayName : 'Cliente',
+            activo: usuario.status !== 'inactive',
+            fechaRegistro: usuario.createdAt || usuario.createdDate || new Date()
         };
 
-        res.status(201).json({
-            success: true,
-            message: 'Usuario creado exitosamente',
-            usuario: respuesta
-        });
-
+        res.json(respuesta);
     } catch (error) {
-        console.error('Error creando usuario:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error interno del servidor'
-        });
+        console.error('Error obteniendo propio usuario por ID:', error);
+        next(error);
     }
 });
 
-router.post('/register', async (req, res) => {
-  const db = await connectDB();
-  const users = db.collection('users');
-  const { name, email, password } = req.body;
+// Ruta para obtener usuario por ID (solo admin)
+router.get('/:id', verificarToken, verificarAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const db = await connectDB();
+        if (!db) {
+            return res.status(500).json({ success: false, message: 'Error de conexión a la base de datos' });
+        }
 
-  if (!name || !email || !password) return res.status(400).json({ error: "Campos obligatorios" });
+        // Construir consultas de búsqueda posibles
+        const orQueries = [];
+        if (ObjectId.isValid(id)) {
+            orQueries.push({ _id: new ObjectId(id) });
+        }
+        // Fallbacks: _id guardado como string, o IDs alternativos usados en el sistema
+        orQueries.push({ _id: id });
+        orQueries.push({ registerId: id });
+        orQueries.push({ loginId: id });
 
-  const exists = await users.findOne({ email });
-  if (exists) return res.status(409).json({ error: "Correo ya registrado" });
+        const usuario = await db.collection('users').findOne({ $or: orQueries });
+        if (!usuario) {
+            return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+        }
 
-  const hashed = await bcrypt.hash(password, 10);
-  await users.insertOne({ name, email, password: hashed, createdAt: new Date() });
+        // Obtener rol si existe
+        let rol = null;
+        if (usuario.roleId) {
+            try {
+                const roleQuery = typeof usuario.roleId === 'string' ? new ObjectId(usuario.roleId) : usuario.roleId;
+                rol = await db.collection('roles').findOne({ _id: roleQuery });
+            } catch {}
+        }
 
-  res.json({ success: true });
+        const respuesta = {
+            id: usuario._id.toString(),
+            nombre: usuario.firstName || usuario.name?.split(' ')[0] || '',
+            apellidos: usuario.lastName || usuario.name?.split(' ').slice(1).join(' ') || '',
+            email: usuario.email,
+            telefono: usuario.phone || '',
+            rol: rol ? rol.displayName : 'Cliente',
+            activo: usuario.status !== 'inactive',
+            fechaRegistro: usuario.createdAt || usuario.createdDate || new Date()
+        };
+
+        res.json(respuesta);
+    } catch (error) {
+        console.error('Error obteniendo usuario por ID:', error);
+        res.status(500).json({ success: false, message: 'Error interno del servidor' });
+    }
 });
+
+
 
 
 router.post('/login', async (req, res) => {
@@ -206,6 +211,9 @@ router.post('/login', async (req, res) => {
 router.delete('/:id', verificarToken, verificarAdmin, async (req, res) => {
     try {
         const { id } = req.params;
+        console.log(`🗑️ DELETE request received for user ID: ${id}`);
+        console.log(`👤 Request from user: ${req.usuario?.userId} (${req.usuario?.email})`);
+        
         const db = await connectDB();
         if (!db) {
             return res.status(500).json({
@@ -214,45 +222,59 @@ router.delete('/:id', verificarToken, verificarAdmin, async (req, res) => {
             });
         }
 
-        // Verificar si el usuario es admin
-        const usuarioActual = await db.collection('users').findOne({ 
-            _id: new ObjectId(req.usuario.userId) 
-        });
-        
-        if (!usuarioActual) {
-            return res.status(404).json({
-                success: false,
-                message: 'Usuario no encontrado'
-            });
-        }
-
-        // Verificar rol de admin
-        let isAdmin = false;
-        if (usuarioActual.roleId) {
-            const rol = await db.collection('roles').findOne({ 
-                _id: new ObjectId(usuarioActual.roleId) 
-            });
-            isAdmin = rol && rol.name === 'admin';
-        }
-
-        if (!isAdmin) {
+        // Ya pasó por verificarAdmin, usamos el admin validado
+        const adminActual = req.usuarioAdmin;
+        if (!adminActual) {
+            console.log('❌ Admin context missing after verificarAdmin');
             return res.status(403).json({
                 success: false,
                 message: 'Acceso denegado. Se requieren permisos de administrador'
             });
         }
 
-        // Eliminar usuario
-        const result = await db.collection('users').deleteOne({ 
-            _id: new ObjectId(id) 
-        });
+        console.log(`✅ Admin access confirmed for user: ${adminActual.email || adminActual.name || adminActual._id}`);
 
-        if (result.deletedCount === 0) {
+        // Construir consulta tolerante para encontrar al usuario (ObjectId o string)
+        const orQueries = [];
+        if (ObjectId.isValid(id)) {
+            orQueries.push({ _id: new ObjectId(id) });
+        }
+        orQueries.push({ _id: id });
+
+        // Obtener información del usuario antes de eliminarlo (para el log)
+        const usuarioAEliminar = await db.collection('users').findOne({ $or: orQueries });
+
+        if (!usuarioAEliminar) {
+            console.log(`❌ User to delete not found: ${id}`);
             return res.status(404).json({
                 success: false,
                 message: 'Usuario no encontrado'
             });
         }
+
+        console.log(`🎯 User found for deletion: ${usuarioAEliminar.email} (${usuarioAEliminar._id})`);
+
+        // Eliminar usuario
+        // Eliminar por el _id real del documento encontrado para evitar problemas de tipo
+        console.log(`🗑️ Attempting to delete user with real _id: ${usuarioAEliminar._id}`);
+        const result = await db.collection('users').deleteOne({ _id: usuarioAEliminar._id });
+
+        console.log(`📊 Delete result:`, {
+            acknowledged: result.acknowledged,
+            deletedCount: result.deletedCount
+        });
+
+        if (result.deletedCount === 0) {
+            console.log(`❌ No user was deleted. ID might not exist: ${id}`);
+            return res.status(404).json({
+                success: false,
+                message: 'Usuario no encontrado'
+            });
+        }
+
+        console.log(`✅ User successfully deleted: ${usuarioAEliminar.email}`);
+
+        // Auditoría desactivada
 
         res.json({
             success: true,
@@ -261,6 +283,9 @@ router.delete('/:id', verificarToken, verificarAdmin, async (req, res) => {
 
     } catch (error) {
         console.error('Error eliminando usuario:', error);
+        
+        // Auditoría desactivada
+
         res.status(500).json({
             success: false,
             message: 'Error interno del servidor'
@@ -282,9 +307,10 @@ router.put('/:id', verificarToken, verificarAdmin, async (req, res) => {
         }
 
         // Verificar si el usuario existe
-        const usuarioExistente = await db.collection('users').findOne({ 
-            _id: new ObjectId(id) 
-        });
+        const orQueries = [];
+        if (ObjectId.isValid(id)) orQueries.push({ _id: new ObjectId(id) });
+        orQueries.push({ _id: id });
+        const usuarioExistente = await db.collection('users').findOne({ $or: orQueries });
 
         if (!usuarioExistente) {
             return res.status(404).json({
@@ -292,6 +318,27 @@ router.put('/:id', verificarToken, verificarAdmin, async (req, res) => {
                 message: 'Usuario no encontrado'
             });
         }
+
+        // Preparar valores anteriores para el log de auditoría
+        const oldValues = {
+            nombre: usuarioExistente.firstName || usuarioExistente.name?.split(' ')[0] || '',
+            apellidos: usuarioExistente.lastName || usuarioExistente.name?.split(' ').slice(1).join(' ') || '',
+            email: usuarioExistente.email,
+            telefono: usuarioExistente.phone || '',
+            activo: usuarioExistente.status !== 'inactive'
+        };
+
+        // Obtener rol anterior
+        let rolAnterior = 'Cliente';
+        if (usuarioExistente.roleId) {
+            const rolDoc = await db.collection('roles').findOne({ 
+                _id: new ObjectId(usuarioExistente.roleId) 
+            });
+            if (rolDoc) {
+                rolAnterior = rolDoc.displayName;
+            }
+        }
+        oldValues.rol = rolAnterior;
 
         // Preparar campos para actualizar
         const updateFields = {
@@ -322,7 +369,7 @@ router.put('/:id', verificarToken, verificarAdmin, async (req, res) => {
 
         // Actualizar usuario
         const result = await db.collection('users').updateOne(
-            { _id: new ObjectId(id) },
+            { _id: usuarioExistente._id },
             { $set: updateFields }
         );
 
@@ -335,7 +382,7 @@ router.put('/:id', verificarToken, verificarAdmin, async (req, res) => {
 
         // Obtener usuario actualizado
         const usuarioActualizado = await db.collection('users').findOne({ 
-            _id: new ObjectId(id) 
+            _id: usuarioExistente._id 
         });
 
         // Obtener rol actualizado
@@ -357,6 +404,8 @@ router.put('/:id', verificarToken, verificarAdmin, async (req, res) => {
             fechaRegistro: usuarioActualizado.createdAt || usuarioActualizado.createdDate || new Date()
         };
 
+        // Auditoría desactivada
+
         res.json({
             success: true,
             message: 'Usuario actualizado exitosamente',
@@ -365,6 +414,9 @@ router.put('/:id', verificarToken, verificarAdmin, async (req, res) => {
 
     } catch (error) {
         console.error('Error actualizando usuario:', error);
+        
+        // Auditoría desactivada
+
         res.status(500).json({
             success: false,
             message: 'Error interno del servidor'
@@ -413,9 +465,39 @@ router.put('/:id/status', verificarToken, verificarAdmin, async (req, res) => {
             });
         }
 
+        // Obtener información del usuario antes del cambio de estado
+        const orQueries = [];
+        if (ObjectId.isValid(id)) orQueries.push({ _id: new ObjectId(id) });
+        orQueries.push({ _id: id });
+        const usuarioTarget = await db.collection('users').findOne({ $or: orQueries });
+
+        if (!usuarioTarget) {
+            // Búsqueda extendida: por registerId y loginId
+            const usuarioPorRegistro = await db.collection('users').findOne({ registerId: id });
+            const usuarioPorLogin = await db.collection('users').findOne({ loginId: id });
+            if (usuarioPorRegistro) {
+                console.log(`[BACKEND] [PUT /api/users/:id/status] Usuario encontrado por registerId. id recibido:`, id, '| id en BD:', usuarioPorRegistro._id, '| email:', usuarioPorRegistro.email);
+                usuarioTarget = usuarioPorRegistro;
+            } else if (usuarioPorLogin) {
+                console.log(`[BACKEND] [PUT /api/users/:id/status] Usuario encontrado por loginId. id recibido:`, id, '| id en BD:', usuarioPorLogin._id, '| email:', usuarioPorLogin.email);
+                usuarioTarget = usuarioPorLogin;
+            }
+        }
+        if (!usuarioTarget) {
+            console.log(`[BACKEND] [PUT /api/users/:id/status] Usuario no encontrado para id recibido:`, id);
+            return res.status(404).json({
+                success: false,
+                message: `Usuario no encontrado para id: ${id}`
+            });
+        } else {
+            console.log(`[BACKEND] [PUT /api/users/:id/status] Usuario encontrado. id recibido:`, id, '| id en BD:', usuarioTarget._id, '| email:', usuarioTarget.email);
+        }
+
+        const estadoAnterior = usuarioTarget.status !== 'inactive';
+
         // Actualizar estado del usuario
         const result = await db.collection('users').updateOne(
-            { _id: new ObjectId(id) },
+            { _id: usuarioTarget._id },
             { $set: { status: activo ? 'active' : 'inactive' } }
         );
 
@@ -426,6 +508,8 @@ router.put('/:id/status', verificarToken, verificarAdmin, async (req, res) => {
             });
         }
 
+        // Auditoría desactivada
+
         res.json({
             success: true,
             message: 'Estado del usuario actualizado exitosamente'
@@ -433,6 +517,9 @@ router.put('/:id/status', verificarToken, verificarAdmin, async (req, res) => {
 
     } catch (error) {
         console.error('Error actualizando estado del usuario:', error);
+        
+        // Auditoría desactivada
+
         res.status(500).json({
             success: false,
             message: 'Error interno del servidor'
@@ -498,5 +585,25 @@ router.patch('/:id/address', async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
+
+// Ruta para activar cuenta
+router.get('/activate', async (req, res) => {
+    const db = await connectDB();
+    const users = db.collection('users');
+    const { token } = req.query;
+    if (!token) return res.status(400).json({ success: false, message: 'Token de activación requerido' });
+    try {
+        const payload = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await users.findOne({ email: payload.email });
+        if (!user) return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+        if (user.status === 'active') return res.json({ success: true, message: 'La cuenta ya está activada' });
+        await users.updateOne({ email: payload.email }, { $set: { status: 'active' } });
+        res.json({ success: true, message: 'Cuenta activada correctamente' });
+    } catch (err) {
+        res.status(400).json({ success: false, message: 'Token inválido o expirado' });
+    }
+});
+
+// Ruta de auditoría eliminada
 
 module.exports = router;

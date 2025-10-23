@@ -14,14 +14,25 @@ import {
   FaCloudUploadAlt
 } from 'react-icons/fa';
 
-const ProductForm = ({ editingProduct, onSuccess }) => {
+const ProductForm = ({ editingProduct, onSuccess, onCancel }) => {
+  // helper to normalize image src (data:, absolute or server-relative)
+  const getImageSrc = (img) => {
+    if (!img) return null;
+    if (typeof img !== 'string') return null;
+    if (img.startsWith('data:')) return img;
+    if (img.startsWith('http://') || img.startsWith('https://')) return img;
+    const base = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    return img.startsWith('/') ? `${base}${img}` : `${base}/${img}`;
+  };
+
   const [form, setForm] = useState({
     name: editingProduct?.name || "",
     price: editingProduct?.price || "",
     description: editingProduct?.description || "",
     category: editingProduct?.category || "",
     stock: editingProduct?.stock || 0,
-    image: editingProduct?.images?.[0] || null
+    image: editingProduct ? (getImageSrc(editingProduct.imageUrl || editingProduct.images?.[0]) || null) : null,
+    removeImage: false
   });
   
   const [loading, setLoading] = useState(false);
@@ -47,7 +58,8 @@ const ProductForm = ({ editingProduct, onSuccess }) => {
         description: editingProduct.description || "",
         category: editingProduct.category || "",
         stock: editingProduct.stock || 0,
-        image: editingProduct.imageUrl || editingProduct.images?.[0] || null
+        image: getImageSrc(editingProduct.imageUrl || editingProduct.images?.[0]) || null,
+        removeImage: false
       });
     }
   }, [editingProduct]);
@@ -101,7 +113,7 @@ const ProductForm = ({ editingProduct, onSuccess }) => {
     setErrors({});
 
     try {
-      const { name, price, description, category, stock, image } = form;
+  const { name, price, description, category, stock, image, removeImage } = form;
       
       const url = editingProduct
         ? `${import.meta.env.VITE_API_URL}/api/products/${editingProduct._id}`
@@ -118,7 +130,12 @@ const ProductForm = ({ editingProduct, onSuccess }) => {
       };
       
       // Solo agregar imagen si es nueva o estamos creando
-      if (image && (image !== editingProduct?.imageUrl)) {
+      // Nota: editingProduct.imageUrl puede haber sido normalizada con getImageSrc
+      if (removeImage) {
+        productData.removeImage = true;
+      }
+
+      if (image && (!editingProduct || image !== getImageSrc(editingProduct.imageUrl || editingProduct.images?.[0]))) {
         productData.image = image;
       }
       
@@ -145,6 +162,7 @@ const ProductForm = ({ editingProduct, onSuccess }) => {
             image: null
           });
         }
+        // Close form / refresh list
         onSuccess?.();
       } else {
         setErrors({ submit: data.error || data.message || "Error al guardar el producto" });
@@ -274,13 +292,30 @@ const ProductForm = ({ editingProduct, onSuccess }) => {
             Imagen del Producto
           </label>
           <div className="image-upload-container">
-            <div className="upload-area">
+            <div
+              className="upload-area-large"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  // forward focus to file input
+                  const input = e.currentTarget.querySelector('.file-input');
+                  input && input.click();
+                }
+              }}
+              onClick={(e) => {
+                const input = e.currentTarget.querySelector('.file-input');
+                input && input.click();
+              }}
+              aria-label="Subir imagen del producto"
+            >
               <input
                 id="image"
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
                 className="file-input"
+                disabled={form.removeImage}
               />
               <div className="upload-placeholder">
                 <FaCloudUploadAlt className="upload-icon" />
@@ -296,6 +331,7 @@ const ProductForm = ({ editingProduct, onSuccess }) => {
                   type="button" 
                   className="remove-image"
                   onClick={() => setForm(prev => ({ ...prev, image: null }))}
+                  title="Eliminar imagen"
                 >
                   <FaTimes />
                 </button>
@@ -306,6 +342,19 @@ const ProductForm = ({ editingProduct, onSuccess }) => {
         </div>
 
         <div className="form-actions">
+          <button 
+            type="button"
+            className="btn-cancel"
+            onClick={() => {
+              // Allow parent to handle closing via onCancel or onSuccess fallback
+              if (onCancel) return onCancel();
+              if (onSuccess) return onSuccess();
+            }}
+            disabled={loading}
+          >
+            Cancelar
+          </button>
+
           <button 
             type="submit" 
             className="submit-button"

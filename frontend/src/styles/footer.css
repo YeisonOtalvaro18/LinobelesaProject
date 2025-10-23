@@ -5,12 +5,7 @@
   padding: 0;
   margin: 0;
   font-family: var(--font-family);
-  width: 100vw;
-  position: relative;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
+  width: 100%;
   box-sizing: border-box;
   margin-bottom: 0 !important;
   padding-bottom: 0 !important;
@@ -33,12 +28,15 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  align-items: center; /* centrar contenido */
+  text-align: center;  /* centrar texto */
 }
 
 .footer-logo {
   display: flex;
+  flex-direction: column; /* icono arriba, texto abajo */
   align-items: center;
-  gap: 15px;
+  gap: 10px;
   margin-bottom: 10px;
 }
 
@@ -58,19 +56,24 @@
   font-size: 1rem;
   line-height: 1.6;
   color: rgba(255, 255, 255, 0.9);
-  max-width: 300px;
+  max-width: 520px;       /* permitir un ancho más cómodo */
+  margin: 0 auto;          /* centrar el párrafo */
+  text-align: center;      /* asegurar centrado */
 }
 
 /* limitar ancho de la marca para que las secciones puedan usar el espacio restante */
 .footer-brand {
-  max-width: 300px;
+  max-width: 520px; /* más ancho y centrado */
+  margin: 0 auto;
 }
 
 /* ===== SECCIONES DEL FOOTER ===== */
 .footer-sections {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 40px;
+  grid-template-columns: 1fr 1fr 1.5fr 1fr;
+  gap: 30px;
+  align-items: start;
+  justify-items: center;
 }
 
 .footer-section h4 {
@@ -102,34 +105,48 @@
   font-size: 0.95rem;
 }
 
+/* Restaurando efecto hover en enlaces del footer */
 .footer-section ul li a:hover {
   color: #ffeb3b;
   transform: translateX(5px);
 }
 
 .footer-section ul li a .icon {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   color: #ffeb3b;
-  width: 18px;
+  width: 20px;
+  min-width: 20px; /* alinear todas las filas */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ===== REDES SOCIALES ===== */
 .social {
-  flex-direction: row !important;
-  gap: 15px !important;
-  flex-wrap: wrap;
+  flex-direction: column !important;
+  gap: 12px !important;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
 }
 
 .social li a {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 12px;
-  border-radius: 50%;
-  width: 48px;
-  height: 48px;
+  background: none; /* Removed rounded background */
+  padding: 0; /* Removed extra padding */
+  border-radius: 0; /* Removed circular shape */
+  width: auto;
+  height: auto;
   display: flex !important;
   align-items: center;
   justify-content: center;
+  flex-direction: row;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
   transition: all 0.3s ease;
+  box-shadow: none;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.95rem;
 }
 
 /* Evitar wrapping de iconos y forzar alineación en pantallas grandes */
@@ -140,51 +157,83 @@
   display: inline-flex !important;
 }
 
+/* Eliminando efecto hover en enlaces de redes sociales */
 .social li a:hover {
-  background: #ffeb3b;
-  color: #6a0dad !important;
-  transform: translateY(-3px) scale(1.1);
-  box-shadow: 0 8px 20px rgba(255, 235, 59, 0.3);
+  background: none; /* No background change on hover */
+  color: #ffeb3b !important; /* Match hover color with other sections */
+  transform: scale(1.1); /* Slight zoom effect */
 }
 
 .social li a .icon {
-  font-size: 1.3rem;
-  width: auto;
+  font-size: 1.5rem; /* Slightly larger icon size */
+  color: #ff69b4; /* Changed icon color */
 }
 
 .social li a .text {
-  display: none;
+  display: inline-block; /* Display text alongside icon */
+  margin-left: 8px; /* Added spacing between icon and text */
+  font-size: 1rem; /* Adjusted text size */
+  color: rgba(255, 255, 255, 0.9); /* Ensure consistent text color */
+}
+
+.social li a:hover .text {
+  color: #ffeb3b; /* Match hover color with other sections */
 }
 
 /* ===== INFORMACIÓN DE CONTACTO ===== */
-.contact li a {
-  padding: 8px 0;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+.contact {
+  flex-direction: row !important;
+  gap: 20px !important;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
-.contact li a:hover {
-  background: rgba(255, 255, 255, 0.1);
-  padding-left: 15px;
+.contact li {
+  display: flex;
+  align-items: center;
+}
+
+.contact li a {
+  padding: 8px 12px;
   border-radius: 8px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+/* Eliminando efecto hover en enlaces de contacto */
+.contact li a:hover {
+  background: inherit;
+  transform: none;
+}
+
+.contact li a .icon {
+  font-size: 1rem;
+  margin-right: 6px;
+  color: #ffeb3b;
+}
+
+.contact li a .text {
+  display: inline-block;
 }
 
 /* ===== PIE DEL FOOTER ===== */
 .footer-bottom {
   background: rgba(0, 0, 0, 0.18);
-  padding: 20px 0;
+  padding: 20px 0 0 0;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 0 !important;
 }
 
 .copy {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
-  text-align: center;
+  text-align: left;
 }
 
 .copy p {
-  margin: 5px 0;
+  margin: 5px 0 0 0;
   font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.8);
 }
@@ -192,6 +241,23 @@
 .copy p:last-child {
   font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Eliminar cualquier espacio después del footer */
+.main-footer::after {
+  content: "";
+  display: block;
+  height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+/* Asegurar que el body no tenga margin/padding inferior */
+body {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 /* ===== RESPONSIVE DESIGN ===== */
@@ -237,6 +303,9 @@
   }
   .social {
     justify-content: flex-start;
+    padding-left: 32px !important;
+    justify-content: flex-start;
+    align-items: flex-start;
   }
   .footer-section ul li a {
     justify-content: flex-start;
@@ -266,6 +335,18 @@
     gap: 30px;
   }
 
+  /* Mantener contacto horizontal en tablet */
+  .contact {
+    flex-direction: row !important;
+    justify-content: flex-start;
+    gap: 15px !important;
+  }
+
+  .contact li a {
+    font-size: 0.85rem;
+    padding: 6px 10px;
+  }
+
   .footer-section {
     text-align: left;
   }
@@ -281,18 +362,22 @@
 
 /* Mobile */
 @media (max-width: 600px) {
-  .main-footer {
-    margin-top: 40px;
-  }
-
   .footer-container {
     padding: 30px 15px 20px;
     gap: 30px;
+    text-align: center;
+  }
+
+  .footer-brand {
+    align-items: center;
+    text-align: center;
   }
 
   .footer-logo {
     flex-direction: column;
     gap: 10px;
+    align-items: center;
+    justify-content: center;
   }
 
   .footer-logo img {
@@ -306,6 +391,7 @@
   .footer-brand p {
     font-size: 0.9rem;
     max-width: 100%;
+    text-align: center;
   }
 
   .footer-sections {
@@ -320,15 +406,31 @@
   .footer-section h4 {
     font-size: 1.1rem;
     margin-bottom: 15px;
+    text-align: center;
   }
 
   .footer-section ul {
     gap: 10px;
+    justify-content: center;
+    align-items: center;
   }
 
   .footer-section ul li a {
     justify-content: center;
     font-size: 0.9rem;
+    text-align: center;
+  }
+
+  /* Contacto responsive en móvil */
+  .contact {
+    flex-direction: column !important;
+    gap: 8px !important;
+    align-items: center;
+  }
+
+  .contact li a {
+    font-size: 0.85rem;
+    padding: 8px 12px;
   }
 
   .contact li a {
@@ -337,8 +439,11 @@
   }
 
   .social {
+    flex-direction: column !important;
+    gap: 12px !important;
+    align-items: center;
     justify-content: center;
-    gap: 12px;
+    text-align: center;
   }
 
   .social li a {
@@ -360,22 +465,51 @@
 @media (max-width: 480px) {
   .footer-container {
     padding: 25px 10px 15px;
+    text-align: center;
+  }
+
+  .footer-brand {
+    align-items: center;
+    text-align: center;
+  }
+
+  .footer-logo {
+    justify-content: center;
+    align-items: center;
   }
 
   .footer-logo h3 {
     font-size: 1.4rem;
+    text-align: center;
   }
 
   .footer-brand p {
     font-size: 0.85rem;
+    text-align: center;
+  }
+
+  .footer-section {
+    text-align: center;
   }
 
   .footer-section h4 {
     font-size: 1rem;
+    text-align: center;
+  }
+
+  .footer-section ul {
+    justify-content: center;
+    align-items: center;
   }
 
   .footer-section ul li a {
     font-size: 0.85rem;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .social {
+    justify-content: center !important;
   }
 
   .social li a {
@@ -387,12 +521,23 @@
     font-size: 1.1rem;
   }
 
+  .contact {
+    justify-content: center !important;
+    align-items: center !important;
+  }
+
+  .copy {
+    text-align: center;
+  }
+
   .copy p {
     font-size: 0.8rem;
+    text-align: center;
   }
 
   .copy p:last-child {
     font-size: 0.75rem;
+    text-align: center;
   }
 }
 

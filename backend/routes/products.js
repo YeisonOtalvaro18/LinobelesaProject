@@ -137,7 +137,8 @@ router.post('/add', async (req, res) => {
       description,
       category,
       price: parseFloat(price),
-      images: [image]
+      images: [image],
+      imageUrl: image
     };
 
     const result = await products.insertOne(newProduct);
@@ -152,6 +153,53 @@ router.post('/add', async (req, res) => {
   } catch (err) {
     console.error("Error al guardar producto:", err);
     res.status(500).json({ success: false, error: "Error interno del servidor" });
+  }
+});
+
+// Ruta para actualizar un producto (datos generales y imagen)
+router.put('/:id', async (req, res) => {
+  try {
+    const db = await connectDB();
+    if (!db) {
+      return res.status(500).json({ success: false, error: 'No se pudo conectar a la base de datos' });
+    }
+
+    const products = db.collection('products');
+    const productId = req.params.id;
+    const { name, description, category, price, stock, image, removeImage } = req.body;
+
+    const updateFields = {};
+    if (typeof name !== 'undefined') updateFields.name = name;
+    if (typeof description !== 'undefined') updateFields.description = description;
+    if (typeof category !== 'undefined') updateFields.category = category;
+    if (typeof price !== 'undefined') updateFields.price = parseFloat(price);
+    if (typeof stock !== 'undefined') updateFields.stock = Number(stock);
+
+    if (removeImage) {
+      // Clear any stored image references
+      updateFields.images = [];
+      updateFields.imageUrl = null;
+    }
+
+    if (typeof image !== 'undefined' && image) {
+      // keep compatibility with front-end which may expect imageUrl or images[0]
+      updateFields.images = [image];
+      updateFields.imageUrl = image;
+    }
+
+    const result = await products.updateOne(
+      { _id: new ObjectId(productId) },
+      { $set: updateFields }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ success: false, error: 'Producto no encontrado' });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error al actualizar producto:', err);
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 

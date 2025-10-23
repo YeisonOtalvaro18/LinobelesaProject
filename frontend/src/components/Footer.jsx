@@ -1,23 +1,38 @@
 import React from "react";
-import { FaFacebookF, FaInstagram, FaTiktok, FaWhatsapp, FaMapMarkerAlt, FaPhone, FaEnvelope } from "react-icons/fa";
+import {
+  FaFacebookF,
+  FaInstagram,
+  FaTiktok,
+  FaWhatsapp,
+  FaMapMarkerAlt,
+  FaPhone,
+  FaEnvelope,
+  FaBullseye,
+  FaEye,
+  FaUsers,
+  FaQuestionCircle,
+  FaTruck,
+  FaCreditCard,
+  FaExchangeAlt,
+} from "react-icons/fa";
 import "../styles/footer.css";
 
 const footerSections = [
   {
     title: "Nosotros",
     links: [
-      { label: "Misión", href: "#mision" },
-      { label: "Visión", href: "#vision" },
-      { label: "Quiénes Somos", href: "#nosotros" },
+      { label: "Misión", href: "#mision", icon: <FaBullseye /> },
+      { label: "Visión", href: "#vision", icon: <FaEye /> },
+      { label: "Quiénes Somos", href: "#nosotros", icon: <FaUsers /> },
     ],
   },
   {
     title: "Ayuda",
     links: [
-      { label: "Preguntas Frecuentes", href: "#faq" },
-      { label: "Envíos", href: "#envios" },
-      { label: "Métodos de Pago", href: "#pagos" },
-      { label: "Devoluciones", href: "#devoluciones" },
+      { label: "Preguntas Frecuentes", href: "#faq", icon: <FaQuestionCircle /> },
+      { label: "Envíos", href: "#envios", icon: <FaTruck /> },
+      { label: "Métodos de Pago", href: "#pagos", icon: <FaCreditCard /> },
+      { label: "Devoluciones", href: "#devoluciones", icon: <FaExchangeAlt /> },
     ],
   },
   {

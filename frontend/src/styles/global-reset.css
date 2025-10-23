@@ -1,0 +1,90 @@
+/* ===== RESET GLOBAL PARA PREVENIR OVERFLOW ===== */
+
+/* Reset universal */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Prevenir overflow horizontal en todos los niveles */
+html {
+  overflow-x: hidden !important;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+body {
+  overflow-x: hidden !important;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+#root {
+  overflow-x: hidden !important;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Prevenir overflow en TODOS los elementos */
+* {
+  max-width: 100%;
+}
+
+/* Prevenir que cualquier contenedor cause overflow */
+.container,
+.page,
+.page-container,
+.main-container,
+.content,
+.wrapper {
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* Prevenir overflow en main */
+main {
+  overflow-x: hidden !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Asegurar que todos los elementos respeten el box-sizing */
+div,
+section,
+article,
+aside,
+header,
+footer,
+nav,
+main {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+/* Prevenir que imágenes y media causen overflow */
+img,
+video,
+iframe,
+embed,
+object {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Asegurar que los formularios no causen overflow */
+form,
+input,
+textarea,
+select,
+button {
+  box-sizing: border-box;
+  max-width: 100%;
+}

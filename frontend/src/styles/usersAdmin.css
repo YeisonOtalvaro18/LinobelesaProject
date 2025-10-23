@@ -1,3 +1,142 @@
+.save-btn, .cancel-btn {
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.save-btn:hover, .cancel-btn:hover {
+  box-shadow: 0 6px 24px rgba(67,233,123,0.18), 0 6px 24px rgba(142,148,251,0.18);
+  transform: translateY(-2px) scale(1.05);
+  opacity: 0.92;
+}
+.save-btn {
+  background: none !important;
+  border-radius: 12px;
+  padding: 10px;
+  border: none;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none !important;
+}
+.save-btn svg {
+  fill: #a259e6;
+  width: 26px;
+  height: 26px;
+}
+.cancel-btn {
+  background: none !important;
+  border-radius: 12px;
+  padding: 10px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none !important;
+}
+.cancel-btn svg {
+  fill: #a259e6;
+  width: 26px;
+  height: 26px;
+}
+.edit-btn {
+  background: none !important;
+  border-radius: 8px;
+  padding: 8px;
+  border: none;
+  margin-right: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none !important;
+}
+.edit-btn svg {
+  fill: #a259e6;
+  width: 26px;
+  height: 26px;
+}
+.toggle-btn {
+  background: none !important;
+  border-radius: 8px;
+  padding: 8px;
+  border: none;
+  margin-right: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none !important;
+}
+.toggle-btn svg {
+  fill: #a259e6;
+  width: 26px;
+  height: 26px;
+}
+.delete-btn {
+  background: none !important;
+  border-radius: 8px;
+  padding: 8px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none !important;
+}
+.delete-btn svg {
+  fill: #a259e6;
+  width: 26px;
+  height: 26px;
+}
+/* ===== ESTILO TABLA USUARIOS ===== */
+.users-table-container {
+  width: 100%;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  padding: 1.5rem;
+  margin-top: 2rem;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-header, .table-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+}
+.table-header {
+  background: #f7f7f7;
+  font-weight: 600;
+  color: #444;
+  border-bottom: 2px solid #eaeaea;
+  padding: 0.7rem 0;
+}
+.table-row {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 0.7rem 0;
+  transition: background 0.2s;
+}
+.table-row:hover {
+  background: #f9f9f9;
+}
+.th, .td {
+  flex: 1;
+  padding: 0.6rem 0.4rem;
+  text-align: left;
+  font-size: 1rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.td-acciones {
+  flex: 1;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
 /* ===== USERS ADMIN STYLES ===== */
 .users-admin {
   padding: var(--spacing-xl);
@@ -57,37 +196,6 @@
   box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
 }
 
-.header-buttons {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.refresh-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px;
-  background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(116, 185, 255, 0.3);
-}
-
-.refresh-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(116, 185, 255, 0.4);
-}
-
-.refresh-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
 .admin-header h1 {
   display: flex;
   align-items: center;
@@ -140,10 +248,6 @@
   color: white;
 }
 
-.stat-card.admin {
-  background: linear-gradient(135deg, #e17055 0%, #fd79a8 100%);
-  color: white;
-}
 
 .stat-icon {
   font-size: 2.5rem;
@@ -344,113 +448,6 @@
   box-shadow: 0 4px 15px rgba(167, 73, 235, 0.3);
 }
 
-/* ===== TABLA ===== */
-.users-table-container {
-  background: white;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-}
-
-.users-table {
-  width: 100%;
-}
-
-.table-header {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1.2fr 1fr 0.8fr 0.8fr 1fr 1.2fr;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
-.th {
-  padding: 1.2rem 1rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: background 0.2s ease;
-}
-
-.th:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.sort-indicator {
-  font-weight: bold;
-  font-size: 1.1rem;
-}
-
-.table-body {
-  max-height: 70vh;
-  overflow-y: auto;
-}
-
-.table-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1.2fr 1fr 0.8fr 0.8fr 1fr 1.2fr;
-  border-bottom: 1px solid #e9ecef;
-  transition: all 0.2s ease;
-}
-
-.table-row:hover {
-  background: #f8f9fa;
-}
-
-.td {
-  padding: 1rem;
-  display: flex;
-  align-items: center;
-  font-size: 0.95rem;
-}
-
-/* ===== CAMPOS DE USUARIO ===== */
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.user-name {
-  font-weight: 600;
-  color: #2c3e50;
-}
-
-.email-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #6c757d;
-}
-
-.email-icon {
-  color: #a749eb;
-}
-
-.role-badge {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-radius: 25px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease;
-}
-
-.role-badge:hover {
-  transform: translateY(-1px);
-}
-
-.role-badge.admin {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
-  color: white;
-}
 
 .role-badge.user {
   background: linear-gradient(135deg, #4ecdc4 0%, #6ee0d6 100%);
@@ -504,81 +501,57 @@
 }
 
 .edit-btn, .toggle-btn, .delete-btn, .save-btn, .cancel-btn {
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   border: none;
-  border-radius: 12px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  font-size: 0.9rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.edit-btn svg, .toggle-btn svg, .delete-btn svg, .save-btn svg, .cancel-btn svg {
-  width: 22px;
-  height: 22px;
   transition: all 0.3s ease;
-}
-
-.edit-btn:hover svg, .toggle-btn:hover svg, .delete-btn:hover svg, .save-btn:hover svg, .cancel-btn:hover svg {
-  transform: scale(1.1);
+  font-size: 0.9rem;
 }
 
 .edit-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
   color: white;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(116, 185, 255, 0.3);
 }
 
 .edit-btn:hover {
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
-}
-
-.edit-btn:active {
-  transform: translateY(0) scale(0.95);
+  background: linear-gradient(135deg, #0984e3 0%, #74b9ff 100%);
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(116, 185, 255, 0.4);
 }
 
 .toggle-btn.activate {
-  background: linear-gradient(135deg, #00d2d3 0%, #54a0ff 100%);
+  background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
   color: white;
-  box-shadow: 0 4px 15px rgba(0, 210, 211, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 184, 148, 0.3);
 }
 
 .toggle-btn.deactivate {
-  background: linear-gradient(135deg, #ffa502 0%, #ff6348 100%);
+  background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
   color: white;
-  box-shadow: 0 4px 15px rgba(255, 165, 2, 0.4);
+  box-shadow: 0 4px 12px rgba(253, 203, 110, 0.3);
 }
 
 .toggle-btn:hover {
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-}
-
-.toggle-btn:active {
-  transform: translateY(0) scale(0.95);
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
 .delete-btn {
-  background: linear-gradient(135deg, #ff7675 0%, #d63031 100%);
+  background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%);
   color: white;
-  box-shadow: 0 4px 15px rgba(255, 118, 117, 0.4);
+  box-shadow: 0 4px 12px rgba(253, 121, 168, 0.3);
 }
 
 .delete-btn:hover {
-  background: linear-gradient(135deg, #e17055 0%, #ff7675 100%);
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 8px 25px rgba(255, 118, 117, 0.5);
-}
-
-.delete-btn:active {
-  transform: translateY(0) scale(0.95);
+  background: linear-gradient(135deg, #e84393 0%, #fd79a8 100%);
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(253, 121, 168, 0.4);
 }
 
 .save-btn {
@@ -1049,19 +1022,5 @@
   .modal-footer .cancel-btn, .modal-footer .submit-btn {
     width: 100%;
     justify-content: center;
-  }
-}
-
-/* Animación para spinner SVG */
-.spinner {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
   }
 }

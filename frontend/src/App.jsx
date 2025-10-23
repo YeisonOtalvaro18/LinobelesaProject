@@ -20,10 +20,10 @@ import OrdersAdmin from "./pages/admin/OrdersAdmin";
 import Reviews from "./components/Reviews";
 import ProductReviews from "./components/ProductReviews";
 import Roles from "./pages/admin/RolesAdmin";
-import Notifications from "./components/Notifications";
+import Notifications from "./pages/admin/AdminNotifications";
 import Inventory from "./pages/admin/AdminInventory";
 import Coupons from "./components/Coupons";
-import Addresses from "./components/Addresses";
+import Addresses from "./pages/admin/AdminAddresses";
 import Checkout from "./components/Checkout";
 import OrderTracking from "./components/OrderTracking";
 
@@ -35,6 +35,7 @@ function App() {
   const [user, setUser] = useState(null); // Usuario autenticado
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [urlParams, setUrlParams] = useState(new URLSearchParams(window.location.search));
+  const [headerOffset, setHeaderOffset] = useState(0);
 
   // 🔹 Estado global del carrito - Recuperar del localStorage
   const [cart, setCart] = useState(() => {
@@ -99,6 +100,21 @@ function App() {
     if (pageParam) {
       setPage(pageParam);
     }
+  }, []);
+
+  // Medir ancho de ventana y ajustar offset del header fijo en móvil
+  useEffect(() => {
+    const computeHeaderOffset = () => {
+      const w = window.innerWidth;
+      if (w <= 480) return 75; // coincide con header.css (altura 75px)
+      if (w <= 768) return 90; // coincide con header.css (altura 90px)
+      return 0; // en desktop el header es sticky y no saca del flow
+    };
+
+    const updateOffset = () => setHeaderOffset(computeHeaderOffset());
+    updateOffset();
+    window.addEventListener('resize', updateOffset);
+    return () => window.removeEventListener('resize', updateOffset);
   }, []);
 
   // Verificar autenticación al cargar la app
@@ -339,6 +355,8 @@ function App() {
         const storedOrders = JSON.parse(localStorage.getItem("orders") || "[]");
         return <OrderTracking orders={storedOrders} />;
       }
+      case "activate":
+        return <Bienvenida />;
 
       // Páginas exclusivas del admin
       case "admin-dashboard":
@@ -378,7 +396,7 @@ function App() {
         if (!isAdmin) return <div>Acceso denegado</div>;
         return <Coupons onNavigate={handlePageChange} />;
       case "direcciones":
-        return <Addresses />;
+        return <Addresses onNavigate={handlePageChange} />;
       default:
         return <Bienvenida />;
     }
@@ -393,6 +411,7 @@ function App() {
     "notificaciones",
     "inventario",
     "cupones",
+    "direcciones",
   ].includes(page);
 
   return (
@@ -410,20 +429,43 @@ function App() {
             isAuthenticated={isAuthenticated}
             isAdmin={isAdmin}
             onLogout={handleLogout}
+            currentPage={page}
           />
         )}
 
       <main
         style={{
           minHeight: isAdminPage ? "100vh" : "70vh",
-          padding:
+          paddingTop:
+            (page !== "login" && page !== "welcome" && page !== "perfil" && !isAdminPage)
+              ? headerOffset
+              : 0,
+          paddingLeft:
             page === "login" ||
             page === "welcome" ||
             page === "perfil" ||
             isAdminPage
-              ? "0"
-              : "20px",
+              ? 0
+              : 20,
+          paddingRight:
+            page === "login" ||
+            page === "welcome" ||
+            page === "perfil" ||
+            isAdminPage
+              ? 0
+              : 20,
+          paddingBottom:
+            page === "login" ||
+            page === "welcome" ||
+            page === "perfil" ||
+            isAdminPage
+              ? 0
+              : 20,
           backgroundColor: isAdminPage ? "#f8f9fa" : "transparent",
+          overflowX: "hidden",
+          width: "100%",
+          maxWidth: "100%",
+          boxSizing: "border-box",
         }}
       >
         {renderPage()}

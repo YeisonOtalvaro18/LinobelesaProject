@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { formatPrice } from '../../utils/formatPrice';
 import ProductForm from '../../components/ProductForm';
 import '../../styles/inventory.css';
 import {
@@ -248,8 +249,8 @@ const Inventory = ({ onNavigate }) => {
             <FaDollarSign />
           </div>
           <div className="stat-info">
-            <span className="number">
-              ${products.reduce((total, p) => total + (p.price * p.stock), 0).toLocaleString()}
+                      <span className="number">
+              ${formatPrice(products.reduce((total, p) => total + (Number(p.price) * Number(p.stock || 0)), 0))}
             </span>
             <span className="label">Valor Inventario</span>
           </div>
@@ -353,22 +354,36 @@ const Inventory = ({ onNavigate }) => {
                     <tr key={product._id}>
                       <td>
                         <div className="product-image-container">
-                          {product.imageUrl ? (
-                            <img 
-                              src={product.imageUrl.startsWith('http') ? product.imageUrl : `http://localhost:8000${product.imageUrl}`}
-                              alt={product.name} 
-                              className="product-thumb"
-                              onError={(e) => {
-                                e.target.src = '/placeholder-image.svg';
-                                e.target.onerror = null;
-                              }}
-                            />
-                          ) : (
-                            <div className="no-image-placeholder">
-                              <FaImage className="no-image-icon" />
-                              <span>Sin imagen</span>
-                            </div>
-                          )}
+                          {(() => {
+                            const img = product.imageUrl || (product.images && product.images[0]);
+                            if (!img) return (
+                              <div className="no-image-placeholder">
+                                <FaImage className="no-image-icon" />
+                                <span>Sin imagen</span>
+                              </div>
+                            );
+
+                            // If it's a Data URL, use it as-is
+                            if (typeof img === 'string' && img.startsWith('data:')) {
+                              return (
+                                <img src={img} alt={product.name} className="product-thumb" onError={(e)=>{e.target.src='/placeholder-image.svg'; e.target.onerror=null}} />
+                              );
+                            }
+
+                            // If absolute http(s) URL, use directly
+                            if (typeof img === 'string' && (img.startsWith('http://') || img.startsWith('https://'))) {
+                              return (
+                                <img src={img} alt={product.name} className="product-thumb" onError={(e)=>{e.target.src='/placeholder-image.svg'; e.target.onerror=null}} />
+                              );
+                            }
+
+                            // Otherwise assume it's a server-relative path; prefix API host
+                            const base = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                            const src = img.startsWith('/') ? `${base}${img}` : `${base}/${img}`;
+                            return (
+                              <img src={src} alt={product.name} className="product-thumb" onError={(e)=>{e.target.src='/placeholder-image.svg'; e.target.onerror=null}} />
+                            );
+                          })()}
                         </div>
                       </td>
                       <td>
@@ -378,7 +393,7 @@ const Inventory = ({ onNavigate }) => {
                         </div>
                       </td>
                       <td>{product.category}</td>
-                      <td>${product.price}</td>
+                      <td>${formatPrice(product.price)}</td>
                       <td>
                         <div className="stock-controls">
                           <input

@@ -1,5 +1,6 @@
 require("dotenv").config();
 const express = require("express");
+const path = require('path');
 const cors = require("cors");
 const connectDB = require("./db");
 const {
@@ -13,6 +14,7 @@ const reviewsRoutes = require("./routes/reviews");
 const departamentosRoutes = require("./routes/departamentos");
 const ordersRoutes = require("./routes/orders");
 const couponsRoutes = require("./routes/coupons");
+const rolesRoutes = require("./routes/roles");
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -50,6 +52,14 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
+// Servir recursos estaticos del frontend (imagenes en /src/IMG y public)
++
+// Esto permite que rutas como http://localhost:8000/src/IMG/xxx.jpg respondan correctamente
+app.use('/src', express.static(path.join(__dirname, '..', 'frontend', 'src')));
++
+app.use('/public', express.static(path.join(__dirname, '..', 'frontend', 'public')));
++
+
 // Middleware de logging
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
@@ -70,6 +80,7 @@ app.use("/api/reviews", reviewsRoutes);
 app.use("/api/departamentos", departamentosRoutes);
 app.use("/api/orders", ordersRoutes);
 app.use("/api/coupons", couponsRoutes);
+app.use("/api/roles", rolesRoutes);
 
 // Middleware para manejar rutas no encontradas
 app.use((req, res, next) => {

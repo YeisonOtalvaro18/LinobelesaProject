@@ -52,6 +52,37 @@ export const validationRules = {
 
 // Validadores específicos por campo
 export const validators = {
+  // Validar municipio
+  validateMunicipio: (municipio) => {
+    const errors = [];
+    if (!municipio || !municipio.trim()) {
+      errors.push("El municipio es obligatorio");
+      return errors;
+    }
+    if (!validationRules.minLength(municipio, 2)) {
+      errors.push("El municipio debe tener al menos 2 caracteres");
+    }
+    if (!validationRules.isOnlyLetters(municipio)) {
+      errors.push("El municipio solo puede contener letras");
+    }
+    return errors;
+  },
+
+  // Validar departamento
+  validateDepartamento: (departamento) => {
+    const errors = [];
+    if (!departamento || !departamento.trim()) {
+      errors.push("El departamento es obligatorio");
+      return errors;
+    }
+    if (!validationRules.minLength(departamento, 2)) {
+      errors.push("El departamento debe tener al menos 2 caracteres");
+    }
+    if (!validationRules.isOnlyLetters(departamento)) {
+      errors.push("El departamento solo puede contener letras");
+    }
+    return errors;
+  },
   // Validar nombre
   validateName: (name) => {
     const errors = [];
@@ -195,13 +226,15 @@ export const validators = {
 
 // Función principal para validar todo el formulario de checkout
 export const validateCheckoutForm = (formData) => {
-  const { firstName, lastName, address, addressDesc, idNumber, idType, cart } = formData;
+  const { firstName, lastName, address, addressDesc, municipio, departamento, idNumber, idType, cart } = formData;
   
   const allErrors = {
     firstName: validators.validateName(firstName),
     lastName: validators.validateLastName(lastName),
     address: validators.validateAddress(address),
     addressDesc: validators.validateAddressDescription(addressDesc),
+    municipio: validators.validateMunicipio(municipio),
+    departamento: validators.validateDepartamento(departamento),
     idNumber: validators.validateIdNumber(idNumber, idType),
     cart: validators.validateCart(cart)
   };

@@ -188,60 +188,7 @@ router.get('/analytics/:period',
   }
 );
 
-// Logs de auditoría
-router.get('/audit-logs',
-  verificarToken,
-  verificarAdmin,
-  async (req, res) => {
-    try {
-      const { 
-        page = 1, 
-        limit = 50, 
-        action, 
-        resource, 
-        userId,
-        dateFrom,
-        dateTo 
-      } = req.query;
-
-      const filters = {};
-      
-      if (action) filters.action = action;
-      if (resource) filters.resource = resource;
-      if (userId) filters.userId = new ObjectId(userId);
-      
-      if (dateFrom || dateTo) {
-        filters.timestamp = {};
-        if (dateFrom) filters.timestamp.$gte = new Date(dateFrom);
-        if (dateTo) filters.timestamp.$lte = new Date(dateTo);
-      }
-
-      // Por ahora retornamos datos simulados
-      const logs = [];
-      const total = 0;
-
-      res.json({
-        success: true,
-        data: {
-          logs,
-          pagination: {
-            page: parseInt(page),
-            limit: parseInt(limit),
-            total,
-            pages: Math.ceil(total / limit)
-          }
-        }
-      });
-
-    } catch (error) {
-      console.error('Error obteniendo logs de auditoría:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Error interno del servidor'
-      });
-    }
-  }
-);
+// Ruta de audit-logs eliminada
 
 // Estadísticas del sistema
 router.get('/system/stats',

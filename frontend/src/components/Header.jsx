@@ -20,6 +20,7 @@ import {
   FaChevronDown,
   FaUserCircle
 } from "react-icons/fa";
+import { formatPrice } from '../utils/formatPrice';
 
 function Header({
   onNavigate,
@@ -30,6 +31,7 @@ function Header({
   isAuthenticated,
   isAdmin,
   onLogout,
+  currentPage,
 }) {
   const [showSearch, setShowSearch] = useState(false);
   const [showCart, setShowCart] = useState(false);
@@ -90,113 +92,17 @@ function Header({
   };
 
   return (
+
     <>
       <header className={`main-header${hideHeader ? " hide-header" : ""}`}>
         <div className="container">
-          {/* LOGO */}
-          <div className="logo" onClick={() => onNavigate?.("inicio")}>
-            <img src="/src/IMG/logoheader.png" alt="Linobelesa logo" />
-            <h1>Linobelesa</h1>
-          </div>
-
-          {/* MENÚ DESKTOP */}
-          <nav className="desktop-nav">
-            <ul>
-              {getMenuItems().map((item) => (
-                <li key={item.id}>
-                  <button onClick={() => onNavigate?.(item.id)}>
-                    <span className="nav-icon">{item.icon}</span>
-                    <span className="nav-text">{item.label}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          {/* ACCIONES */}
-          <div className="acciones">
-            {/* Buscar */}
-            <button
-              className="icon-btn"
-              onClick={() => setShowSearch(!showSearch)}
-              aria-label="Buscar"
-            >
-              <FaSearch />
-            </button>
-
-            {/* Carrito con badge - Solo para clientes autenticados */}
-            {isAuthenticated && !isAdmin && (
-              <button
-                className="icon-btn carrito-btn"
-                onClick={() => setShowCart(true)}
-                aria-label="Carrito"
-              >
-                <FaShoppingCart />
-                {totalItems > 0 && (
-                  <span className="cart-badge">{totalItems}</span>
-                )}
-              </button>
-            )}
-
-            {/* Usuario autenticado */}
-            {isAuthenticated ? (
-              <div className="user-menu-container">
-                <button
-                  className="btn-user"
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                >
-                  <FaUserCircle className="user-icon" />
-                  <span className="header-user-name">{user?.name || user?.nombre || user?.username || 'Usuario'}</span>
-                  {isAdmin && <span className="admin-badge">Admin</span>}
-                  <FaChevronDown className={`chevron ${showUserMenu ? 'rotated' : ''}`} />
-                </button>
-                {showUserMenu && (
-                  <div className="user-dropdown">
-                    {!isAdmin && (
-                      <button
-                        onClick={() => {
-                          onNavigate?.("perfil");
-                          setShowUserMenu(false);
-                        }}
-                      >
-                        <span className="icon"><FaUser /></span>
-                        <span className="text">Mi Perfil</span>
-                      </button>
-                    )}
-                    {isAdmin && (
-                      <button
-                        onClick={() => {
-                          onNavigate?.("admin-dashboard");
-                          setShowUserMenu(false);
-                        }}
-                      >
-                        <span className="icon"><FaUserShield /></span>
-                        <span className="text">Panel Admin</span>
-                      </button>
-                    )}
-                    <div className="divider"></div>
-                    <button
-                      onClick={() => {
-                        onLogout?.();
-                        setShowUserMenu(false);
-                      }}
-                    >
-                      <span className="icon"><FaSignOutAlt /></span>
-                      <span className="text">Cerrar Sesión</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <button
-                className="btn-login"
-                onClick={() => onNavigate?.("login")}
-              >
-                Login
-              </button>
-            )}
-
-            {/* Menú Hamburguesa */}
+          <div className="header-left">
+            {/* LOGO */}
+            <div className="logo" onClick={() => onNavigate?.("inicio")}> 
+              <img src="/src/IMG/logoheader.png" alt="Linobelesa logo" />
+              <h1>Linobelesa</h1>
+            </div>
+            {/* Hamburguesa solo en móvil */}
             <button
               className="hamburger-btn"
               onClick={() => setShowMobileMenu(!showMobileMenu)}
@@ -205,25 +111,74 @@ function Header({
               {showMobileMenu ? <FaTimes /> : <FaBars />}
             </button>
           </div>
+          {/* MENÚ DESKTOP */}
+          <nav className="desktop-nav">
+            <ul>
+              {getMenuItems().map((item) => (
+                <li key={item.id}>
+                  <button onClick={() => onNavigate?.(item.id)}>
+                    <span className="nav-text">{item.label}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          {/* ACCIONES DESKTOP: Carrito y Login */}
+          <div className="acciones acciones-desktop">
+            {/* Buscar solo en productos */}
+            {currentPage === 'productos' && (
+              <button
+                className="icon-btn"
+                onClick={() => setShowSearch(!showSearch)}
+                aria-label="Buscar"
+                style={{ fontSize: '1.2rem' }}
+              >
+                <FaSearch style={{ fontSize: '1.2rem' }} />
+              </button>
+            )}
+            {/* Carrito Desktop */}
+            {isAuthenticated && !isAdmin && (
+              <button
+                className="icon-btn cart-desktop-btn"
+                onClick={() => setShowCart(true)}
+                aria-label="Carrito"
+                style={{ position: 'relative', marginLeft: '16px', fontSize: '1.3rem' }}
+              >
+                <FaShoppingCart />
+                {totalItems > 0 && (
+                  <span className="cart-badge">{totalItems}</span>
+                )}
+              </button>
+            )}
+            {/* Login/Perfil Desktop */}
+            {!isAuthenticated ? (
+              <button
+                className="icon-btn login-desktop-btn"
+                onClick={() => onNavigate?.("login")}
+                aria-label="Iniciar Sesión"
+                style={{ marginLeft: '16px', fontSize: '1.3rem' }}
+              >
+                <FaUserCircle />
+                <span className="nav-text" style={{ marginLeft: '6px' }}>Iniciar Sesión</span>
+              </button>
+            ) : (
+              <button
+                className="icon-btn perfil-desktop-btn"
+                onClick={() => onNavigate?.(isAdmin ? "admin-dashboard" : "perfil")}
+                aria-label="Perfil"
+                style={{ marginLeft: '16px', fontSize: '1.3rem' }}
+              >
+                <FaUserCircle />
+                <span className="nav-text" style={{ marginLeft: '6px' }}>{user?.name || `${user?.nombre || ''} ${user?.apellidos || ''}`.trim() || user?.username || 'Usuario'} {isAdmin && "(Admin)"}</span>
+              </button>
+            )}
+          </div>
         </div>
       </header>
-
       {/* Menú Mobile */}
       <div className={`mobile-menu ${showMobileMenu ? "active" : ""}`}>
         <nav className="mobile-nav">
-          <ul>
-            {getMenuItems().map((item) => (
-              <li key={item.id}>
-                <button onClick={() => handleMobileMenuClick(item.id)}>
-                  <span className="nav-icon">{item.icon}</span>
-                  <span className="nav-text">{item.label}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-
-          {/* Usuario en menú móvil */}
-          <div className="mobile-user-section">
+          <div className="mobile-menu-top">
             {isAuthenticated && !isAdmin && (
               <button
                 className="mobile-cart-btn"
@@ -231,16 +186,16 @@ function Header({
                   setShowCart(true);
                   setShowMobileMenu(false);
                 }}
+                style={{ marginBottom: '16px', width: '100%' }}
               >
-                <FaShoppingCart />
+                <FaShoppingCart style={{ marginRight: '8px' }} />
                 Carrito {totalItems > 0 && `(${totalItems})`}
               </button>
             )}
-
             {isAuthenticated ? (
-              <div className="mobile-user-menu">
-                <p className="user-welcome">
-                  Hola, {user?.name || user?.nombre || user?.username || 'Usuario'} {isAdmin && "(Admin)"}
+              <div className="mobile-user-menu" style={{ marginBottom: '16px', width: '100%' }}>
+                <p className="user-welcome" style={{ fontWeight: 'bold', marginBottom: '8px' }}>
+                  {user?.name || `${user?.nombre || ''} ${user?.apellidos || ''}`.trim() || user?.username || 'Usuario'} {isAdmin && "(Admin)"}
                 </p>
                 {!isAdmin && (
                   <button
@@ -248,6 +203,7 @@ function Header({
                       onNavigate?.("perfil");
                       setShowMobileMenu(false);
                     }}
+                    style={{ width: '100%', marginBottom: '8px' }}
                   >
                     Mi Perfil
                   </button>
@@ -258,6 +214,7 @@ function Header({
                       onNavigate?.("admin-dashboard");
                       setShowMobileMenu(false);
                     }}
+                    style={{ width: '100%', marginBottom: '8px' }}
                   >
                     Panel Admin
                   </button>
@@ -267,6 +224,7 @@ function Header({
                     onLogout?.();
                     setShowMobileMenu(false);
                   }}
+                  style={{ width: '100%' }}
                 >
                   Cerrar Sesión
                 </button>
@@ -278,27 +236,27 @@ function Header({
                   onNavigate?.("login");
                   setShowMobileMenu(false);
                 }}
+                style={{ width: '100%' }}
               >
                 Iniciar Sesión
               </button>
             )}
           </div>
+          <ul>
+            {getMenuItems().map((item) => (
+              <li key={item.id}>
+                <button onClick={() => handleMobileMenuClick(item.id)} style={{ width: '100%' }}>
+                  <span className="nav-text">{item.label}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
         </nav>
       </div>
-
-      {/* Overlay para cerrar menú mobile */}
-      {showMobileMenu && (
-        <div
-          className="mobile-menu-overlay"
-          onClick={() => setShowMobileMenu(false)}
-        />
-      )}
-
       {/* Barra buscador */}
       <div className={`buscador ${showSearch ? "visible" : ""}`}>
         <input type="text" placeholder="Buscar productos..." />
       </div>
-
       {/* Modal Carrito */}
       <div
         id="carritoModal"
@@ -337,7 +295,7 @@ function Header({
                     <div className="cart-item-details">
                       <h4 className="cart-item-name">{item.name}</h4>
                       <p className="cart-item-price">
-                        ${(item.price * item.qty).toLocaleString("es-CO")}
+                        ${formatPrice(Number(item.price) * Number(item.qty))}
                       </p>
                     </div>
                     <div className="cart-item-controls">
@@ -372,7 +330,7 @@ function Header({
               </div>
               <div className="cart-total">
                 <span>Total:</span>
-                <span>${totalPrice.toLocaleString("es-CO")}</span>
+                <span>${formatPrice(totalPrice)}</span>
               </div>
               <div className="cart-actions">
                 <button
@@ -396,7 +354,6 @@ function Header({
           )}
         </div>
       </div>
-
       {/* Botón flotante volver arriba */}
       {showScrollTop && (
         <button

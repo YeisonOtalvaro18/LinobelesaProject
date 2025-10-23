@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../styles/products.css";
+import { formatPrice } from '../utils/formatPrice';
 
 function Products({ addToCart, isAdmin = false, isAuthenticated = false }) {
   // 🧩 Estados
@@ -173,7 +174,7 @@ function Products({ addToCart, isAdmin = false, isAuthenticated = false }) {
             <h3>{prod.name}</h3>
             <p className="desc">{prod.description}</p>
             <p className="price">
-              ${parseFloat(prod.price).toLocaleString("es-CO")}
+              ${formatPrice(prod.price)}
             </p>
             {/* Botón carrito solo para clientes autenticados (no admin) */}
             {isAuthenticated && !isAdmin && (

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { 
   FaUsers, FaUserCheck, FaUserTimes, FaUserShield, 
-  FaSearch, FaArrowLeft, FaFilter, FaSort,
+  FaSearch, FaEdit, FaTrash, FaToggleOn, FaToggleOff, 
+  FaSave, FaTimes, FaArrowLeft, FaFilter, FaSort,
   FaPlus, FaEye, FaUserPlus, FaCalendarAlt, FaEnvelope,
-  FaCheck, FaExclamationTriangle, FaTimes
+  FaSpinner, FaCheck, FaExclamationTriangle
 } from 'react-icons/fa';
-import '../../styles/usersAdmin.css';
+import '@/styles/usersAdmin.css';
 import { authenticatedFetch, auth } from '../../utils/auth.js';
 
 const UsersAdmin = ({ onNavigate }) => {
@@ -33,10 +34,8 @@ const UsersAdmin = ({ onNavigate }) => {
   // Estados para nuevo usuario
   const [newUser, setNewUser] = useState({
     nombre: '',
-    apellidos: '',
+    apellido: '',
     email: '',
-    telefono: '',
-    rol: 'Cliente',
     activo: true
   });
   const [newUserErrors, setNewUserErrors] = useState({});
@@ -70,43 +69,27 @@ const UsersAdmin = ({ onNavigate }) => {
 
   const validateUserForm = (userData, isNew = false) => {
     const errors = {};
-    
     if (!userData.nombre?.trim()) {
       errors.nombre = 'El nombre es requerido';
     } else if (userData.nombre.trim().length < 2) {
       errors.nombre = 'El nombre debe tener al menos 2 caracteres';
     }
-    
-    if (!userData.apellidos?.trim()) {
-      errors.apellidos = 'Los apellidos son requeridos';
-    } else if (userData.apellidos.trim().length < 2) {
-      errors.apellidos = 'Los apellidos deben tener al menos 2 caracteres';
+    if (!userData.apellido?.trim()) {
+      errors.apellido = 'El apellido es requerido';
+    } else if (userData.apellido.trim().length < 2) {
+      errors.apellido = 'El apellido debe tener al menos 2 caracteres';
     }
-    
     if (!userData.email?.trim()) {
       errors.email = 'El email es requerido';
     } else if (!validateEmail(userData.email)) {
       errors.email = 'Email inválido';
     }
-    
-    if (userData.telefono?.trim() && userData.telefono.trim().length < 8) {
-      errors.telefono = 'El teléfono debe tener al menos 8 dígitos';
-    }
-    
-    if (!userData.rol) {
-      errors.rol = 'El rol es requerido';
-    }
-    
     return errors;
   };
 
   useEffect(() => {
     fetchUsers();
   }, []);
-
-  const refreshUsersList = async () => {
-    await fetchUsers();
-  };
 
   const fetchUsers = async () => {
     try {
@@ -170,7 +153,10 @@ const UsersAdmin = ({ onNavigate }) => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          ...newUser,
+          nombre: newUser.nombre,
+          apellido: newUser.apellido,
+          email: newUser.email,
+          activo: newUser.activo,
           password: 'temp123' // Contraseña temporal
         })
       });
@@ -178,8 +164,8 @@ const UsersAdmin = ({ onNavigate }) => {
       const data = await response.json();
       
       if (response.ok) {
-        setUsers([...users, data.usuario]);
-        setNewUser({ nombre: '', apellidos: '', email: '', telefono: '', rol: 'Cliente', activo: true });
+        setUsers([...users, data]);
+  setNewUser({ nombre: '', apellido: '', email: '', activo: true });
         setNewUserErrors({});
         setShowAddUser(false);
         showSuccess('Usuario creado exitosamente');
@@ -197,10 +183,8 @@ const UsersAdmin = ({ onNavigate }) => {
     setEditingUser(user.id);
     setEditForm({
       nombre: user.nombre,
-      apellidos: user.apellidos || '',
+      apellido: user.apellido,
       email: user.email,
-      telefono: user.telefono || '',
-      rol: user.rol || 'Cliente',
       activo: user.activo
     });
     setEditErrors({});
@@ -227,18 +211,12 @@ const UsersAdmin = ({ onNavigate }) => {
       const data = await response.json();
       
       if (response.ok) {
-        setUsers(users.map(user => 
-          user.id === userId ? { ...user, ...data.usuario } : user
-        ));
+        // Refrescar la lista de usuarios después de editar
+        await fetchUsers();
         setEditingUser(null);
         setEditForm({});
         setEditErrors({});
         showSuccess('Usuario actualizado exitosamente');
-      } else if (response.status === 404) {
-        setError('Usuario no encontrado. Puede haber sido eliminado.');
-        // Remover el usuario de la lista si no existe
-        setUsers(users.filter(user => user.id !== userId));
-        setEditingUser(null);
       } else {
         setError(data.message || 'Error al actualizar usuario');
       }
@@ -271,12 +249,9 @@ const UsersAdmin = ({ onNavigate }) => {
       });
       
       if (response.ok) {
-        setUsers(users.filter(user => user.id !== userId));
+        // Refrescar la lista de usuarios después de eliminar
+        await fetchUsers();
         showSuccess('Usuario eliminado exitosamente');
-      } else if (response.status === 404) {
-        // El usuario ya no existe, removerlo de la lista
-        setUsers(users.filter(user => user.id !== userId));
-        showSuccess('Usuario ya no existe en el servidor');
       } else {
         const data = await response.json();
         setError(data.message || 'Error al eliminar usuario');
@@ -292,6 +267,8 @@ const UsersAdmin = ({ onNavigate }) => {
     try {
       setOperationLoading(`status-${userId}`);
       const token = localStorage.getItem('token');
+      // Log para depuración: mostrar el id que se envía
+      console.log(`[FRONT] Desactivar usuario, id enviado:`, userId);
       const response = await fetch(`http://localhost:8000/api/users/${userId}/status`, {
         method: 'PUT',
         headers: {
@@ -302,20 +279,18 @@ const UsersAdmin = ({ onNavigate }) => {
       });
       
       if (response.ok) {
-        setUsers(users.map(user => 
-          user.id === userId ? { ...user, activo: !currentStatus } : user
-        ));
+        // Refrescar la lista de usuarios después de cambiar el estado
+        await fetchUsers();
         showSuccess(`Usuario ${!currentStatus ? 'activado' : 'desactivado'} exitosamente`);
-      } else if (response.status === 404) {
-        setError('Usuario no encontrado. Puede haber sido eliminado.');
-        // Remover el usuario de la lista si no existe
-        setUsers(users.filter(user => user.id !== userId));
       } else {
         const data = await response.json();
         setError(data.message || 'Error al cambiar estado del usuario');
+        // Log para depuración: mostrar el error recibido
+        console.error(`[FRONT] Error al cambiar estado:`, data.message);
       }
     } catch (err) {
       setError('Error de conexión al servidor');
+      console.error(`[FRONT] Error de conexión al servidor:`, err);
     } finally {
       setOperationLoading(null);
     }
@@ -374,9 +349,7 @@ const UsersAdmin = ({ onNavigate }) => {
   if (loading) {
     return (
       <div className="users-loading">
-        <svg className="spinner" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2V6M12 18V22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12H6M18 12H22M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
+        <FaSpinner className="spinner" />
         <p>Cargando usuarios...</p>
       </div>
     );
@@ -388,32 +361,12 @@ const UsersAdmin = ({ onNavigate }) => {
     <div className="users-admin">
       {/* Header */}
       <div className="admin-header">
-        <div className="header-top">
-          <button className="back-btn" onClick={handleBackToDashboard}>
+        <div className="header-top" style={{display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative'}}>
+          <button className="back-btn" onClick={handleBackToDashboard} style={{position: 'absolute', left: 0}}>
             <FaArrowLeft />
             <span>Volver al Dashboard</span>
           </button>
-          <h1><FaUsers className="header-icon" />Gestión de Usuarios</h1>
-          <div className="header-buttons">
-            <button 
-              className="refresh-btn"
-              onClick={refreshUsersList}
-              disabled={loading}
-              title="Refrescar lista de usuarios"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 12A9 9 0 0 0 12 21A9 9 0 0 0 21 12A9 9 0 0 0 12 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M6 6L3 3V9H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
-            <button 
-              className="add-user-btn"
-              onClick={() => setShowAddUser(true)}
-            >
-              <FaUserPlus />
-              <span>Nuevo Usuario</span>
-            </button>
-          </div>
+          <h1 style={{margin: '0 auto', textAlign: 'center'}}><FaUsers className="header-icon" />Gestión de Usuarios</h1>
         </div>
 
         {/* Estadísticas */}
@@ -443,15 +396,6 @@ const UsersAdmin = ({ onNavigate }) => {
             <div className="stat-info">
               <span className="stat-number">{inactiveUsers}</span>
               <span className="stat-label">Inactivos</span>
-            </div>
-          </div>
-          <div className="stat-card admin">
-            <div className="stat-icon">
-              <FaUserShield />
-            </div>
-            <div className="stat-info">
-              <span className="stat-number">{adminUsers}</span>
-              <span className="stat-label">Administradores</span>
             </div>
           </div>
         </div>
@@ -528,36 +472,24 @@ const UsersAdmin = ({ onNavigate }) => {
             <FaUserTimes />
             <span>Inactivos ({inactiveUsers})</span>
           </button>
-          <button
-            className={`filter-tab ${filter === 'admin' ? 'active' : ''}`}
-            onClick={() => setFilter('admin')}
-          >
-            <FaUserShield />
-            <span>Admins ({adminUsers})</span>
-          </button>
         </div>
       </div>
 
       {/* Tabla de Usuarios */}
-      <div className="users-table-container">
+  <div className="users-table-container responsive-table">
         <div className="users-table">
           <div className="table-header">
             <div className="th th-nombre" onClick={() => handleSort('nombre')}>
               <span>Nombre</span>
               {sortBy === 'nombre' && <span className="sort-indicator">{sortOrder === 'asc' ? '↑' : '↓'}</span>}
             </div>
-            <div className="th th-apellidos" onClick={() => handleSort('apellidos')}>
-              <span>Apellidos</span>
-              {sortBy === 'apellidos' && <span className="sort-indicator">{sortOrder === 'asc' ? '↑' : '↓'}</span>}
+            <div className="th th-apellido" onClick={() => handleSort('apellido')}>
+              <span>Apellido</span>
+              {sortBy === 'apellido' && <span className="sort-indicator">{sortOrder === 'asc' ? '↑' : '↓'}</span>}
             </div>
             <div className="th th-email" onClick={() => handleSort('email')}>
               <span>Email</span>
               {sortBy === 'email' && <span className="sort-indicator">{sortOrder === 'asc' ? '↑' : '↓'}</span>}
-            </div>
-            <div className="th th-telefono">Teléfono</div>
-            <div className="th th-rol" onClick={() => handleSort('rol')}>
-              <span>Rol</span>
-              {sortBy === 'rol' && <span className="sort-indicator">{sortOrder === 'asc' ? '↑' : '↓'}</span>}
             </div>
             <div className="th th-estado">Estado</div>
             <div className="th th-fecha" onClick={() => handleSort('fechaRegistro')}>
@@ -575,7 +507,7 @@ const UsersAdmin = ({ onNavigate }) => {
                     <div className="edit-field">
                       <input
                         type="text"
-                        value={editForm.nombre}
+                        value={editForm.nombre || ""}
                         onChange={(e) => setEditForm({...editForm, nombre: e.target.value})}
                         className={editErrors.nombre ? 'error' : ''}
                       />
@@ -587,20 +519,21 @@ const UsersAdmin = ({ onNavigate }) => {
                     </div>
                   )}
                 </div>
-                
-                <div className="td td-apellidos">
+                <div className="td td-apellido">
                   {editingUser === user.id ? (
                     <div className="edit-field">
                       <input
                         type="text"
-                        value={editForm.apellidos}
-                        onChange={(e) => setEditForm({...editForm, apellidos: e.target.value})}
-                        className={editErrors.apellidos ? 'error' : ''}
+                        value={editForm.apellido || ""}
+                        onChange={(e) => setEditForm({...editForm, apellido: e.target.value})}
+                        className={editErrors.apellido ? 'error' : ''}
                       />
-                      {editErrors.apellidos && <span className="field-error">{editErrors.apellidos}</span>}
+                      {editErrors.apellido && <span className="field-error">{editErrors.apellido}</span>}
                     </div>
                   ) : (
-                    <span>{user.apellidos}</span>
+                    <div className="user-info">
+                      <span className="user-apellido">{user.apellido}</span>
+                    </div>
                   )}
                 </div>
 
@@ -609,7 +542,7 @@ const UsersAdmin = ({ onNavigate }) => {
                     <div className="edit-field">
                       <input
                         type="email"
-                        value={editForm.email}
+                        value={editForm.email || ""}
                         onChange={(e) => setEditForm({...editForm, email: e.target.value})}
                         className={editErrors.email ? 'error' : ''}
                       />
@@ -617,49 +550,12 @@ const UsersAdmin = ({ onNavigate }) => {
                     </div>
                   ) : (
                     <div className="email-info">
-                      <FaEnvelope className="email-icon" />
                       <span>{user.email}</span>
                     </div>
                   )}
                 </div>
 
-                <div className="td td-telefono">
-                  {editingUser === user.id ? (
-                    <div className="edit-field">
-                      <input
-                        type="tel"
-                        value={editForm.telefono}
-                        onChange={(e) => setEditForm({...editForm, telefono: e.target.value})}
-                        className={editErrors.telefono ? 'error' : ''}
-                        placeholder="Teléfono"
-                      />
-                      {editErrors.telefono && <span className="field-error">{editErrors.telefono}</span>}
-                    </div>
-                  ) : (
-                    <span>{user.telefono || 'No especificado'}</span>
-                  )}
-                </div>
 
-                <div className="td td-rol">
-                  {editingUser === user.id ? (
-                    <div className="edit-field">
-                      <select
-                        value={editForm.rol}
-                        onChange={(e) => setEditForm({...editForm, rol: e.target.value})}
-                        className={editErrors.rol ? 'error' : ''}
-                      >
-                        <option value="Cliente">Cliente</option>
-                        <option value="Admin">Administrador</option>
-                      </select>
-                      {editErrors.rol && <span className="field-error">{editErrors.rol}</span>}
-                    </div>
-                  ) : (
-                    <span className={`role-badge ${user.rol || 'user'}`}>
-                      {user.rol === 'admin' ? <FaUserShield /> : <FaUsers />}
-                      {user.rol === 'admin' ? 'Administrador' : 'Usuario'}
-                    </span>
-                  )}
-                </div>
 
                 <div className="td td-estado">
                   <span className={`status-badge ${user.activo ? 'active' : 'inactive'}`}>
@@ -670,7 +566,6 @@ const UsersAdmin = ({ onNavigate }) => {
 
                 <div className="td td-fecha">
                   <div className="date-info">
-                    <FaCalendarAlt className="date-icon" />
                     <span>{new Date(user.fechaRegistro).toLocaleDateString('es-ES')}</span>
                   </div>
                 </div>
@@ -683,26 +578,13 @@ const UsersAdmin = ({ onNavigate }) => {
                         onClick={() => handleSaveEdit(user.id)}
                         disabled={operationLoading === `edit-${user.id}`}
                       >
-                        {operationLoading === `edit-${user.id}` ? (
-                          <svg className="spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 2V6M12 18V22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12H6M18 12H22M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        ) : (
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H16L21 8V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            <polyline points="17,21 17,13 7,13 7,21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            <polyline points="7,3 7,8 15,8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        )}
+                        {operationLoading === `edit-${user.id}` ? <FaSpinner className="spinner" /> : <FaSave />}
                       </button>
                       <button
                         className="cancel-btn"
                         onClick={handleCancelEdit}
                       >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
+                        <FaTimes />
                       </button>
                     </div>
                   ) : (
@@ -712,10 +594,7 @@ const UsersAdmin = ({ onNavigate }) => {
                         onClick={() => handleEditUser(user)}
                         title="Editar usuario"
                       >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M18.5 2.50001C18.8978 2.10219 19.4374 1.87869 20 1.87869C20.5626 1.87869 21.1022 2.10219 21.5 2.50001C21.8978 2.89784 22.1213 3.4374 22.1213 4.00001C22.1213 4.56262 21.8978 5.10219 21.5 5.50001L12 15L8 16L9 12L18.5 2.50001Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
+                        <FaEdit />
                       </button>
                       <button
                         className={`toggle-btn ${user.activo ? 'deactivate' : 'activate'}`}
@@ -724,20 +603,8 @@ const UsersAdmin = ({ onNavigate }) => {
                         title={user.activo ? 'Desactivar usuario' : 'Activar usuario'}
                       >
                         {operationLoading === `status-${user.id}` ? 
-                          <svg className="spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 2V6M12 18V22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12H6M18 12H22M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg> : 
-                          user.activo ? (
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <rect x="1" y="5" width="22" height="14" rx="7" ry="7" fill="currentColor"/>
-                              <circle cx="16" cy="12" r="3" fill="white"/>
-                            </svg>
-                          ) : (
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <rect x="1" y="5" width="22" height="14" rx="7" ry="7" stroke="currentColor" strokeWidth="2" fill="none"/>
-                              <circle cx="8" cy="12" r="3" fill="currentColor"/>
-                            </svg>
-                          )
+                          <FaSpinner className="spinner" /> : 
+                          (user.activo ? <FaToggleOn /> : <FaToggleOff />)
                         }
                       </button>
                       <button
@@ -747,15 +614,8 @@ const UsersAdmin = ({ onNavigate }) => {
                         title="Eliminar usuario"
                       >
                         {operationLoading === `delete-${user.id}` ? 
-                          <svg className="spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 2V6M12 18V22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12H6M18 12H22M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg> : 
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M3 6H5H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M10 11V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M14 11V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
+                          <FaSpinner className="spinner" /> : 
+                          <FaTrash />
                         }
                       </button>
                     </div>
@@ -798,21 +658,9 @@ const UsersAdmin = ({ onNavigate }) => {
                   value={newUser.nombre}
                   onChange={(e) => setNewUser({...newUser, nombre: e.target.value})}
                   className={newUserErrors.nombre ? 'error' : ''}
-                  placeholder="Nombre"
+                  placeholder="Nombre completo"
                 />
                 {newUserErrors.nombre && <span className="field-error">{newUserErrors.nombre}</span>}
-              </div>
-
-              <div className="form-group">
-                <label>Apellidos</label>
-                <input
-                  type="text"
-                  value={newUser.apellidos}
-                  onChange={(e) => setNewUser({...newUser, apellidos: e.target.value})}
-                  className={newUserErrors.apellidos ? 'error' : ''}
-                  placeholder="Apellidos"
-                />
-                {newUserErrors.apellidos && <span className="field-error">{newUserErrors.apellidos}</span>}
               </div>
 
               <div className="form-group">
@@ -828,26 +676,14 @@ const UsersAdmin = ({ onNavigate }) => {
               </div>
 
               <div className="form-group">
-                <label>Teléfono</label>
-                <input
-                  type="tel"
-                  value={newUser.telefono}
-                  onChange={(e) => setNewUser({...newUser, telefono: e.target.value})}
-                  className={newUserErrors.telefono ? 'error' : ''}
-                  placeholder="Número de teléfono"
-                />
-                {newUserErrors.telefono && <span className="field-error">{newUserErrors.telefono}</span>}
-              </div>
-
-              <div className="form-group">
                 <label>Rol</label>
                 <select
                   value={newUser.rol}
                   onChange={(e) => setNewUser({...newUser, rol: e.target.value})}
                   className={newUserErrors.rol ? 'error' : ''}
                 >
-                  <option value="Cliente">Cliente</option>
-                  <option value="Admin">Administrador</option>
+                  <option value="user">Usuario</option>
+                  <option value="admin">Administrador</option>
                 </select>
                 {newUserErrors.rol && <span className="field-error">{newUserErrors.rol}</span>}
               </div>
@@ -878,9 +714,7 @@ const UsersAdmin = ({ onNavigate }) => {
               >
                 {operationLoading === 'create' ? (
                   <>
-                    <svg className="spinner" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 2V6M12 18V22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12H6M18 12H22M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
+                    <FaSpinner className="spinner" />
                     Creando...
                   </>
                 ) : (

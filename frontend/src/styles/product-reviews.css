@@ -182,8 +182,17 @@
 
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: 1fr; /* default: single column for small screens */
   gap: 18px;
+  align-items: start;
+}
+
+/* Desktop: two products per row */
+@media (min-width: 900px) {
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 22px;
+  }
 }
 
 .product-card {
@@ -194,6 +203,10 @@
   box-shadow: 0 6px 18px rgba(167, 73, 235, 0.06);
   text-align: center;
   transition: transform 0.2s ease;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch; /* allow children to take full width */
 }
 
 .product-card:hover {
@@ -202,7 +215,7 @@
 
 .product-card img {
   width: 100%;
-  height: 140px;
+  height: 200px; /* larger height on desktop */
   object-fit: cover;
   border-radius: 8px;
   margin-bottom: 10px;
@@ -211,6 +224,11 @@
   color: #a749eb;
   margin: 8px 0;
 }
+
+.static-stars { width: 100%; display:flex; justify-content:center; gap:6px; margin:6px 0 8px; padding:0; box-sizing: border-box; }
+.static-stars .star-rating { gap:4px; }
+.static-stars .star-btn { width: 18px; height: 18px; padding: 0; }
+.static-stars .star-btn svg { width:12px !important; height:12px !important; }
 
 .rating-summary {
   display: flex;
@@ -254,6 +272,42 @@
   width: 16px !important;
   height: 16px !important;
   display: block;
+}
+
+/* Make stars larger and clearer */
+.star-rating .star-btn svg {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+.star-btn.interactive:hover {
+  transform: scale(1.15);
+}
+
+.star-btn { cursor: pointer; }
+
+/* Star picker: larger hit area and label */
+.star-picker { display: flex; align-items: center; gap: 8px; }
+.star-picker .star-label { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; padding: 2px; }
+.star-picker .star-label .star-visual { display: inline-flex; align-items: center; justify-content: center; }
+.star-picker .star-label svg { width: 14px !important; height: 14px !important; }
+.star-picker .star-label:hover { background: rgba(106,13,173,0.04); }
+.star-picker input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
+.tar-picker .filled { background: linear-gradient(90deg, rgba(167,73,235,0.04), rgba(189,70,183,0.04)); }
+.star-picker .filled { background: linear-gradient(90deg, rgba(167,73,235,0.04), rgba(189,70,183,0.04)); }
+
+/* Prevent stars from overflowing and keep them inline */
+.product-card { position: relative; overflow: hidden; }
+.rating-summary { display: inline-flex; align-items: center; gap: 6px; overflow: hidden; white-space: nowrap; max-width: 110px; }
+
+/* Ensure the review form doesn't expand the card horizontally */
+.reviews-section { position: relative; z-index: 2; box-sizing: border-box; }
+.new-review-form { max-width: 100%; width: 100%; margin: 12px 0; position: relative; box-sizing: border-box; }
+
+/* On small screens, make the form full width but contained */
+@media (max-width: 480px) {
+  .new-review-form { width: calc(100% - 20px); margin-left: 10px; margin-right: 10px; }
+  .rating-summary { max-width: 100px; }
 }
 
 .reviews-section {
